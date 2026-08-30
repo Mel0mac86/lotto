@@ -1,0 +1,253 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0E1116; }
+    a { color: #58A6FF; text-decoration: none; }
+    a:hover { color: #79B8FF; }
+
+    /* Terminale dati: scuro di default, chiaro come variante. */
+    .root {
+      --bg: #0E1116;      /* fondo */
+      --panel: #12171E;   /* fascia/pannello */
+      --line: #232A34;    /* filetto marcato */
+      --hair: #1A2029;    /* filetto sottile */
+      --fg: #E6EDF3;      /* testo primario */
+      --fg2: #8B949E;     /* testo secondario */
+      --fg3: #59626D;     /* testo terziario */
+      --ok: #3FB950;      /* indice alto */
+      --warn: #D8A02A;    /* indice medio */
+      --bad: #F85149;     /* indice basso / negativo */
+      --key: #58A6FF;     /* azione */
+      --grid: #1B222B;    /* reticolo dei grafici */
+      --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+      width: 390px; height: 844px; overflow: hidden;
+      display: flex; flex-direction: column;
+      background: var(--bg); color: var(--fg);
+      font-family: var(--sans);
+      font-size: 13px; line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    .root.t-chiaro {
+      --bg: #FFFFFF; --panel: #F7F8FA; --line: #D5DBE2; --hair: #E6EAEF;
+      --fg: #10151B; --fg2: #5B6672; --fg3: #8A939E;
+      --ok: #197A3D; --warn: #8A6100; --bad: #C0342E; --key: #1B5FC1;
+      --grid: #EDF0F4;
+    }
+
+    .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+    /* Etichetta di sezione: la spaziatura è la firma del terminale. */
+    .lbl {
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg3);
+    }
+
+    .bar {
+      height: 46px; flex: 0 0 46px; display: flex; align-items: center; gap: 10px;
+      padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--bg);
+    }
+    .scroll { flex: 1 1 auto; overflow: hidden; }
+    .pad { padding: 0 16px; }
+
+    .sec { border-top: 1px solid var(--hair); padding: 14px 16px 0; }
+    .sec:first-child { border-top: none; }
+
+    .rowline { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--hair); }
+    .rowline:last-child { border-bottom: none; }
+    .grow { flex: 1 1 auto; min-width: 0; }
+
+    /* Chip numerico: quadrato, non pallina — è uno strumento, non una tombola. */
+    .chip {
+      width: 52px; height: 52px; border-radius: 3px; border: 1px solid;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 19px; font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+    .chip.sm { width: 38px; height: 38px; font-size: 14px; }
+    .chip-ok   { color: var(--ok);   border-color: rgba(63,185,80,0.45);  background: rgba(63,185,80,0.10); }
+    .chip-warn { color: var(--warn); border-color: rgba(216,160,42,0.45); background: rgba(216,160,42,0.10); }
+    .chip-bad  { color: var(--bad);  border-color: rgba(248,81,73,0.45);  background: rgba(248,81,73,0.10); }
+    .chip-flat { color: var(--fg2);  border-color: var(--line);           background: transparent; }
+    .t-chiaro .chip-ok   { border-color: rgba(25,122,61,0.40);  background: rgba(25,122,61,0.07); }
+    .t-chiaro .chip-warn { border-color: rgba(138,97,0,0.40);   background: rgba(138,97,0,0.07); }
+    .t-chiaro .chip-bad  { border-color: rgba(192,52,46,0.40);  background: rgba(192,52,46,0.07); }
+
+    .nav {
+      flex: 0 0 58px; display: flex; border-top: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .nav > div {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--fg3); border-right: 1px solid var(--hair);
+    }
+    .nav > div:last-child { border-right: none; }
+    .nav > div.on { color: var(--fg); background: var(--bg); }
+
+    .btn {
+      height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      border: 1px solid var(--line); border-radius: 3px; background: transparent; color: var(--fg);
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .btn.key { border-color: var(--key); color: var(--key); }
+
+    .note { font-size: 11px; line-height: 1.5; color: var(--fg2); }
+    .warnbox {
+      border-left: 2px solid var(--fg3); padding: 8px 0 8px 10px;
+      font-size: 10.5px; line-height: 1.5; color: var(--fg2);
+    }
+</style>
+</helmet>
+<div class="root {{temaClasse}}">
+<div class="bar">
+  <span class="lbl" style="color: var(--fg); font-size: 11px; letter-spacing: 0.16em">Lotto AI Analyzer</span>
+  <span class="grow"></span>
+  <span class="mono" style="font-size: 10px; letter-spacing: 0.08em; color: var(--fg2); border: 1px solid var(--line); border-radius: 3px; padding: 3px 7px">BARI · 5A</span>
+</div>
+<div class="scroll">
+  <div class="sec">
+    <div class="lbl">Archivio locale</div>
+    <div style="display: flex; gap: 16px; margin-top: 8px">
+      <div style="flex: 1">
+      <div class="lbl">Lotto</div>
+      <div class="mono" style="font-size: 26px; font-weight: 500; letter-spacing: -0.01em; margin-top: 2px">6.897</div>
+      <div class="mono" style="font-size: 10px; color: var(--fg3); letter-spacing: 0.04em">al 29.08.26</div>
+    </div><div style="flex: 1">
+      <div class="lbl">SuperEnalotto</div>
+      <div class="mono" style="font-size: 26px; font-weight: 500; letter-spacing: -0.01em; margin-top: 2px">627</div>
+      <div class="mono" style="font-size: 10px; color: var(--fg3); letter-spacing: 0.04em">al 29.08.26</div>
+    </div>
+    </div>
+    <div style="height: 14px"></div>
+  </div>
+
+  <div class="sec">
+    <div class="lbl">Segnali del periodo</div>
+    <div style="display: flex; gap: 12px; border-bottom: 1px solid var(--hair)">
+      <div style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 0">
+      <span style="display: flex"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--ok)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3s4 3.5 4 7a4 4 0 0 1-8 0c0-1.6 1-2.8 1-2.8S7 9 8.5 9C8.5 6 10 3 10 3z"/></svg></span>
+      <div>
+        <div class="mono" style="font-size: 17px; font-weight: 500; color: var(--ok); line-height: 1.1">73</div>
+        <div class="mono" style="font-size: 9px; color: var(--fg3); letter-spacing: 0.06em">trend +38%</div>
+      </div>
+    </div><div style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 0">
+      <span style="display: flex"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--key)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v14M4 6.5l12 7M16 6.5l-12 7"/></svg></span>
+      <div>
+        <div class="mono" style="font-size: 17px; font-weight: 500; color: var(--key); line-height: 1.1">12</div>
+        <div class="mono" style="font-size: 9px; color: var(--fg3); letter-spacing: 0.06em">trend −29%</div>
+      </div>
+    </div><div style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 0">
+      <span style="display: flex"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--warn)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2"/></svg></span>
+      <div>
+        <div class="mono" style="font-size: 17px; font-weight: 500; color: var(--warn); line-height: 1.1">64</div>
+        <div class="mono" style="font-size: 9px; color: var(--fg3); letter-spacing: 0.06em">ritardo 87</div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="sec" style="border-top: none; padding-top: 12px">
+    <div style="display: flex; gap: 0; border: 1px solid var(--line); border-radius: 3px; overflow: hidden">
+      <div class="mono on" style="flex: 1; text-align: center; padding: 9px 0; font-size: 11px; letter-spacing: 0.1em; background: var(--panel); color: var(--fg); border-right: 1px solid var(--line)">LOTTO</div>
+      <div class="mono" style="flex: 1; text-align: center; padding: 9px 0; font-size: 11px; letter-spacing: 0.1em; color: var(--fg3)">SUPERENALOTTO</div>
+    </div>
+    <div style="height: 10px"></div>
+  </div>
+
+  <div class="sec">
+    <div class="lbl" style="margin-bottom: 2px">Analisi</div>
+    <div class="rowline">
+      <span class="mono" style="font-size: 10px; color: var(--fg3); width: 18px">01</span>
+      <span style="display: flex; opacity: 0.75"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h14M6 14V8M10 14V4M14 14v-6"/></svg></span>
+      <span class="grow" style="font-weight: 500; letter-spacing: -0.005em">Frequenze e ritardi</span>
+      <span class="mono" style="font-size: 10.5px; color: var(--fg2)">90 numeri</span>
+      <span style="display: flex; opacity: 0.5"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg></span>
+    </div><div class="rowline">
+      <span class="mono" style="font-size: 10px; color: var(--fg3); width: 18px">02</span>
+      <span style="display: flex; opacity: 0.75"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2"/></svg></span>
+      <span class="grow" style="font-weight: 500; letter-spacing: -0.005em">Ritardatari</span>
+      <span class="mono" style="font-size: 10.5px; color: var(--fg2)">max 87</span>
+      <span style="display: flex; opacity: 0.5"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg></span>
+    </div><div class="rowline">
+      <span class="mono" style="font-size: 10px; color: var(--fg3); width: 18px">03</span>
+      <span style="display: flex; opacity: 0.75"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3s4 3.5 4 7a4 4 0 0 1-8 0c0-1.6 1-2.8 1-2.8S7 9 8.5 9C8.5 6 10 3 10 3z"/></svg></span>
+      <span class="grow" style="font-weight: 500; letter-spacing: -0.005em">Caldi e freddi</span>
+      <span class="mono" style="font-size: 10.5px; color: var(--fg2)">7 filtri</span>
+      <span style="display: flex; opacity: 0.5"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg></span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="lbl" style="margin-bottom: 2px">Combinazioni</div>
+    <div class="rowline">
+      <span class="mono" style="font-size: 10px; color: var(--fg3); width: 18px">04</span>
+      <span style="display: flex; opacity: 0.75"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l1-1"/></svg></span>
+      <span class="grow" style="font-weight: 500; letter-spacing: -0.005em">Ambi</span>
+      <span class="mono" style="font-size: 10.5px; color: var(--fg2)">4.005 coppie</span>
+      <span style="display: flex; opacity: 0.5"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg></span>
+    </div><div class="rowline">
+      <span class="mono" style="font-size: 10px; color: var(--fg3); width: 18px">05</span>
+      <span style="display: flex; opacity: 0.75"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="5.5" height="5.5"/><rect x="11" y="3.5" width="5.5" height="5.5"/><rect x="3.5" y="11" width="5.5" height="5.5"/><rect x="11" y="11" width="5.5" height="5.5"/></svg></span>
+      <span class="grow" style="font-weight: 500; letter-spacing: -0.005em">Terni</span>
+      <span class="mono" style="font-size: 10.5px; color: var(--fg2)">117.480 terne</span>
+      <span style="display: flex; opacity: 0.5"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg></span>
+    </div><div class="rowline">
+      <span class="mono" style="font-size: 10px; color: var(--fg3); width: 18px">06</span>
+      <span style="display: flex; opacity: 0.75"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3"/></svg></span>
+      <span class="grow" style="font-weight: 500; letter-spacing: -0.005em">Cinquina AI</span>
+      <span class="mono" style="font-size: 10.5px; color: var(--fg2)">4 modalità</span>
+      <span style="display: flex; opacity: 0.5"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg></span>
+    </div><div class="rowline">
+      <span class="mono" style="font-size: 10px; color: var(--fg3); width: 18px">07</span>
+      <span style="display: flex; opacity: 0.75"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="13" height="13" rx="2"/><circle cx="7.5" cy="7.5" r="1"/><circle cx="12.5" cy="12.5" r="1"/><circle cx="10" cy="10" r="1"/></svg></span>
+      <span class="grow" style="font-weight: 500; letter-spacing: -0.005em">Multi-ruota</span>
+      <span class="mono" style="font-size: 10.5px; color: var(--fg2)">11 ruote</span>
+      <span style="display: flex; opacity: 0.5"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg></span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="lbl" style="margin-bottom: 2px">Verifica</div>
+    <div class="rowline">
+      <span class="mono" style="font-size: 10px; color: var(--fg3); width: 18px">08</span>
+      <span style="display: flex; opacity: 0.75"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v5L4 16a1 1 0 0 0 .9 1.5h10.2A1 1 0 0 0 16 16l-4-8V3M7 3h6M6.5 12h7"/></svg></span>
+      <span class="grow" style="font-weight: 500; letter-spacing: -0.005em">Backtest</span>
+      <span class="mono" style="font-size: 10.5px; color: var(--fg2)">walk-forward</span>
+      <span style="display: flex; opacity: 0.5"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg></span>
+    </div><div class="rowline">
+      <span class="mono" style="font-size: 10px; color: var(--fg3); width: 18px">09</span>
+      <span style="display: flex; opacity: 0.75"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4a2.5 2.5 0 0 0-2.5 2.5A2.5 2.5 0 0 0 4 9c0 1 .6 1.9 1.5 2.3V13a2.5 2.5 0 0 0 5 0V4.8A1.8 1.8 0 0 0 8 4zM12 4a2.5 2.5 0 0 1 2.5 2.5A2.5 2.5 0 0 1 16 9c0 1-.6 1.9-1.5 2.3V13a2.5 2.5 0 0 1-5 0"/></svg></span>
+      <span class="grow" style="font-weight: 500; letter-spacing: -0.005em">AI Analyst</span>
+      <span class="mono" style="font-size: 10.5px; color: var(--fg2)">AUC 0,492</span>
+      <span style="display: flex; opacity: 0.5"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg></span>
+    </div>
+  </div>
+</div>
+<div class="nav">
+  <div class="on"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 10 4l7 5.5V16a1 1 0 0 1-1 1h-3v-5H7v5H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h14M6 14V8M10 14V4M14 14v-6"/></svg><span>Analisi</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v3M10 14v3M3 10h3M14 10h3M5.6 5.6l2.1 2.1M12.3 12.3l2.1 2.1M14.4 5.6l-2.1 2.1M7.7 12.3l-2.1 2.1"/></svg><span>Genera</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v5L4 16a1 1 0 0 0 .9 1.5h10.2A1 1 0 0 0 16 16l-4-8V3M7 3h6M6.5 12h7"/></svg><span>Verifica</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="5.5" rx="6" ry="2.5"/><path d="M4 5.5v9c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-9M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"/></svg><span>Dati</span></div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { temaClasse: this.props.tema === 'chiaro' ? 't-chiaro' : 't-scuro' };
+  }
+}
+</script>
+</body>
+</html>

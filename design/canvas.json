@@ -1,0 +1,102 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Home"
+    },
+    {
+      "file": "Analisi.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Analisi"
+    },
+    {
+      "file": "Ambi.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Ambi"
+    },
+    {
+      "file": "Cinquina.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Cinquina AI"
+    },
+    {
+      "file": "Risultato.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Risultato"
+    },
+    {
+      "file": "Backtest.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Backtest"
+    },
+    {
+      "file": "AIAnalyst.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "AI Analyst"
+    },
+    {
+      "file": "DashboardChiaro.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home · tema chiaro"
+    },
+    {
+      "file": "Sistema.dc.html",
+      "x": 0,
+      "y": 2000,
+      "w": 860,
+      "h": 760,
+      "title": "Sistema di progetto"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "direzione",
+      "x": 0,
+      "y": -250,
+      "w": 860,
+      "text": "TERMINALE DATI\nSuperfici piatte e filetti al posto delle card, numeri in monospaziato tabellare, un solo accento di segnale per stato.\nOgni schermata ha una levetta «tema» sopra la cornice: scuro e chiaro sono lo stesso sistema, non due skin."
+    },
+    {
+      "id": "numeri-quadrati",
+      "x": 1410,
+      "y": -250,
+      "w": 390,
+      "text": "I numeri sono chip QUADRATI, non palline: il colore del bordo porta la fascia dell'indice.\nÈ la scelta che allontana di più l'app dall'immaginario della tombola."
+    },
+    {
+      "id": "onesta",
+      "x": 940,
+      "y": 1900,
+      "w": 500,
+      "text": "Il verdetto onesto — «Nessun vantaggio predittivo dimostrato» — è composto come titolo, non nascosto in una nota a piè di pagina.\nÈ il punto dell'app, quindi ha il peso tipografico di un titolo."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

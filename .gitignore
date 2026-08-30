@@ -20,3 +20,8 @@ xcuserdata/
 # CocoaPods / Carthage (non usati, ma per sicurezza)
 Pods/
 Carthage/Build/
+
+# Canvas di progetto: file assemblato dall'editor (2,6 MB), rigenerabile dai sorgenti in design/
+design/*-redesign.html
+__pycache__/
+*.pyc

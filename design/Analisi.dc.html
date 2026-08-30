@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0E1116; }
+    a { color: #58A6FF; text-decoration: none; }
+    a:hover { color: #79B8FF; }
+
+    /* Terminale dati: scuro di default, chiaro come variante. */
+    .root {
+      --bg: #0E1116;      /* fondo */
+      --panel: #12171E;   /* fascia/pannello */
+      --line: #232A34;    /* filetto marcato */
+      --hair: #1A2029;    /* filetto sottile */
+      --fg: #E6EDF3;      /* testo primario */
+      --fg2: #8B949E;     /* testo secondario */
+      --fg3: #59626D;     /* testo terziario */
+      --ok: #3FB950;      /* indice alto */
+      --warn: #D8A02A;    /* indice medio */
+      --bad: #F85149;     /* indice basso / negativo */
+      --key: #58A6FF;     /* azione */
+      --grid: #1B222B;    /* reticolo dei grafici */
+      --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+      width: 390px; height: 844px; overflow: hidden;
+      display: flex; flex-direction: column;
+      background: var(--bg); color: var(--fg);
+      font-family: var(--sans);
+      font-size: 13px; line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    .root.t-chiaro {
+      --bg: #FFFFFF; --panel: #F7F8FA; --line: #D5DBE2; --hair: #E6EAEF;
+      --fg: #10151B; --fg2: #5B6672; --fg3: #8A939E;
+      --ok: #197A3D; --warn: #8A6100; --bad: #C0342E; --key: #1B5FC1;
+      --grid: #EDF0F4;
+    }
+
+    .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+    /* Etichetta di sezione: la spaziatura è la firma del terminale. */
+    .lbl {
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg3);
+    }
+
+    .bar {
+      height: 46px; flex: 0 0 46px; display: flex; align-items: center; gap: 10px;
+      padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--bg);
+    }
+    .scroll { flex: 1 1 auto; overflow: hidden; }
+    .pad { padding: 0 16px; }
+
+    .sec { border-top: 1px solid var(--hair); padding: 14px 16px 0; }
+    .sec:first-child { border-top: none; }
+
+    .rowline { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--hair); }
+    .rowline:last-child { border-bottom: none; }
+    .grow { flex: 1 1 auto; min-width: 0; }
+
+    /* Chip numerico: quadrato, non pallina — è uno strumento, non una tombola. */
+    .chip {
+      width: 52px; height: 52px; border-radius: 3px; border: 1px solid;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 19px; font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+    .chip.sm { width: 38px; height: 38px; font-size: 14px; }
+    .chip-ok   { color: var(--ok);   border-color: rgba(63,185,80,0.45);  background: rgba(63,185,80,0.10); }
+    .chip-warn { color: var(--warn); border-color: rgba(216,160,42,0.45); background: rgba(216,160,42,0.10); }
+    .chip-bad  { color: var(--bad);  border-color: rgba(248,81,73,0.45);  background: rgba(248,81,73,0.10); }
+    .chip-flat { color: var(--fg2);  border-color: var(--line);           background: transparent; }
+    .t-chiaro .chip-ok   { border-color: rgba(25,122,61,0.40);  background: rgba(25,122,61,0.07); }
+    .t-chiaro .chip-warn { border-color: rgba(138,97,0,0.40);   background: rgba(138,97,0,0.07); }
+    .t-chiaro .chip-bad  { border-color: rgba(192,52,46,0.40);  background: rgba(192,52,46,0.07); }
+
+    .nav {
+      flex: 0 0 58px; display: flex; border-top: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .nav > div {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--fg3); border-right: 1px solid var(--hair);
+    }
+    .nav > div:last-child { border-right: none; }
+    .nav > div.on { color: var(--fg); background: var(--bg); }
+
+    .btn {
+      height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      border: 1px solid var(--line); border-radius: 3px; background: transparent; color: var(--fg);
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .btn.key { border-color: var(--key); color: var(--key); }
+
+    .note { font-size: 11px; line-height: 1.5; color: var(--fg2); }
+    .warnbox {
+      border-left: 2px solid var(--fg3); padding: 8px 0 8px 10px;
+      font-size: 10.5px; line-height: 1.5; color: var(--fg2);
+    }
+</style>
+</helmet>
+<div class="root {{temaClasse}}">
+<div class="bar">
+  <span style="display: flex; align-items: center; color: var(--key)"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--key)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-6 6 6 6"/></svg></span>
+  <span class="lbl" style="color: var(--fg); font-size: 11px; letter-spacing: 0.16em">Analisi</span>
+  <span class="grow"></span>
+  <span class="mono" style="font-size: 10px; letter-spacing: 0.08em; color: var(--fg2); border: 1px solid var(--line); border-radius: 3px; padding: 3px 7px">LOTTO · BARI</span>
+</div>
+<div class="scroll">
+  <div class="sec" style="padding-bottom: 12px">
+    <div style="display: flex; gap: 8px">
+      <div class="mono" style="flex: 1; border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; font-size: 11px; display: flex; justify-content: space-between"><span style="color: var(--fg3)">RUOTA</span><span>BARI</span></div>
+      <div class="mono" style="flex: 1; border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; font-size: 11px; display: flex; justify-content: space-between"><span style="color: var(--fg3)">PERIODO</span><span>5 ANNI</span></div>
+    </div>
+    <div class="mono" style="display: flex; gap: 18px; margin-top: 12px; font-size: 10.5px; color: var(--fg2)">
+      <span>ESTRAZIONI <b style="color: var(--fg); font-weight: 500">627</b></span>
+      <span>DAL <b style="color: var(--fg); font-weight: 500">01.09.22</b></span>
+      <span>AL <b style="color: var(--fg); font-weight: 500">29.08.26</b></span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div style="display: flex; align-items: baseline"><span class="lbl grow">Scostamento dall'atteso</span><span class="mono" style="font-size: 9.5px; color: var(--fg3)">--- 34,8 ATTESE</span></div>
+    <div style="margin: 10px 0 4px"><svg width="100%" height="72" viewBox="0 0 358 72"><rect x="0.00" y="31.50" width="2.31" height="4.50" fill="var(--fg3)"/><rect x="3.98" y="36.00" width="2.31" height="14.25" fill="var(--fg3)"/><rect x="7.96" y="36.00" width="2.31" height="10.50" fill="var(--fg3)"/><rect x="11.93" y="24.00" width="2.31" height="12.00" fill="var(--fg3)"/><rect x="15.91" y="5.25" width="2.31" height="30.75" fill="var(--ok)"/><rect x="19.89" y="36.00" width="2.31" height="25.50" fill="var(--bad)"/><rect x="23.87" y="5.25" width="2.31" height="30.75" fill="var(--ok)"/><rect x="27.84" y="5.25" width="2.31" height="30.75" fill="var(--ok)"/><rect x="31.82" y="36.00" width="2.31" height="18.00" fill="var(--fg3)"/><rect x="35.80" y="36.00" width="2.31" height="10.50" fill="var(--fg3)"/><rect x="39.78" y="36.00" width="2.31" height="10.50" fill="var(--fg3)"/><rect x="43.76" y="20.25" width="2.31" height="15.75" fill="var(--fg3)"/><rect x="47.73" y="9.00" width="2.31" height="27.00" fill="var(--fg3)"/><rect x="51.71" y="16.50" width="2.31" height="19.50" fill="var(--fg3)"/><rect x="55.69" y="36.00" width="2.31" height="29.25" fill="var(--bad)"/><rect x="59.67" y="36.00" width="2.31" height="33.00" fill="var(--bad)"/><rect x="63.64" y="36.00" width="2.31" height="3.00" fill="var(--fg3)"/><rect x="67.62" y="20.25" width="2.31" height="15.75" fill="var(--fg3)"/><rect x="71.60" y="31.50" width="2.31" height="4.50" fill="var(--fg3)"/><rect x="75.58" y="36.00" width="2.31" height="18.00" fill="var(--fg3)"/><rect x="79.56" y="36.00" width="2.31" height="33.00" fill="var(--bad)"/><rect x="83.53" y="31.50" width="2.31" height="4.50" fill="var(--fg3)"/><rect x="87.51" y="36.00" width="2.31" height="21.75" fill="var(--fg3)"/><rect x="91.49" y="9.00" width="2.31" height="27.00" fill="var(--fg3)"/><rect x="95.47" y="31.50" width="2.31" height="4.50" fill="var(--fg3)"/><rect x="99.44" y="36.00" width="2.31" height="3.00" fill="var(--fg3)"/><rect x="103.42" y="5.25" width="2.31" height="30.75" fill="var(--ok)"/><rect x="107.40" y="31.50" width="2.31" height="4.50" fill="var(--fg3)"/><rect x="111.38" y="16.50" width="2.31" height="19.50" fill="var(--fg3)"/><rect x="115.36" y="36.00" width="2.31" height="3.00" fill="var(--fg3)"/><rect x="119.33" y="36.00" width="2.31" height="3.00" fill="var(--fg3)"/><rect x="123.31" y="36.00" width="2.31" height="6.75" fill="var(--fg3)"/><rect x="127.29" y="16.50" width="2.31" height="19.50" fill="var(--fg3)"/><rect x="131.27" y="36.00" width="2.31" height="21.75" fill="var(--fg3)"/><rect x="135.24" y="16.50" width="2.31" height="19.50" fill="var(--fg3)"/><rect x="139.22" y="20.25" width="2.31" height="15.75" fill="var(--fg3)"/><rect x="143.20" y="27.75" width="2.31" height="8.25" fill="var(--fg3)"/><rect x="147.18" y="36.00" width="2.31" height="25.50" fill="var(--bad)"/><rect x="151.16" y="36.00" width="2.31" height="10.50" fill="var(--fg3)"/><rect x="155.13" y="9.00" width="2.31" height="27.00" fill="var(--fg3)"/><rect x="159.11" y="27.75" width="2.31" height="8.25" fill="var(--fg3)"/><rect x="163.09" y="36.00" width="2.31" height="6.75" fill="var(--fg3)"/><rect x="167.07" y="36.00" width="2.31" height="29.25" fill="var(--bad)"/><rect x="171.04" y="12.75" width="2.31" height="23.25" fill="var(--fg3)"/><rect x="175.02" y="36.00" width="2.31" height="21.75" fill="var(--fg3)"/><rect x="179.00" y="36.00" width="2.31" height="3.00" fill="var(--fg3)"/><rect x="182.98" y="36.00" width="2.31" height="6.75" fill="var(--fg3)"/><rect x="186.96" y="36.00" width="2.31" height="18.00" fill="var(--fg3)"/><rect x="190.93" y="36.00" width="2.31" height="21.75" fill="var(--fg3)"/><rect x="194.91" y="36.00" width="2.31" height="25.50" fill="var(--fg3)"/><rect x="198.89" y="36.00" width="2.31" height="14.25" fill="var(--fg3)"/><rect x="202.87" y="16.50" width="2.31" height="19.50" fill="var(--fg3)"/><rect x="206.84" y="36.00" width="2.31" height="18.00" fill="var(--fg3)"/><rect x="210.82" y="31.50" width="2.31" height="4.50" fill="var(--fg3)"/><rect x="214.80" y="27.75" width="2.31" height="8.25" fill="var(--fg3)"/><rect x="218.78" y="12.75" width="2.31" height="23.25" fill="var(--fg3)"/><rect x="222.76" y="27.75" width="2.31" height="8.25" fill="var(--fg3)"/><rect x="226.73" y="36.00" width="2.31" height="10.50" fill="var(--fg3)"/><rect x="230.71" y="36.00" width="2.31" height="29.25" fill="var(--bad)"/><rect x="234.69" y="35.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="238.67" y="36.00" width="2.31" height="14.25" fill="var(--fg3)"/><rect x="242.64" y="5.25" width="2.31" height="30.75" fill="var(--ok)"/><rect x="246.62" y="35.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="250.60" y="27.75" width="2.31" height="8.25" fill="var(--fg3)"/><rect x="254.58" y="31.50" width="2.31" height="4.50" fill="var(--fg3)"/><rect x="258.56" y="36.00" width="2.31" height="3.00" fill="var(--fg3)"/><rect x="262.53" y="35.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="266.51" y="36.00" width="2.31" height="6.75" fill="var(--fg3)"/><rect x="270.49" y="20.25" width="2.31" height="15.75" fill="var(--fg3)"/><rect x="274.47" y="36.00" width="2.31" height="25.50" fill="var(--fg3)"/><rect x="278.44" y="36.00" width="2.31" height="14.25" fill="var(--fg3)"/><rect x="282.42" y="20.25" width="2.31" height="15.75" fill="var(--fg3)"/><rect x="286.40" y="20.25" width="2.31" height="15.75" fill="var(--fg3)"/><rect x="290.38" y="36.00" width="2.31" height="33.00" fill="var(--bad)"/><rect x="294.36" y="31.50" width="2.31" height="4.50" fill="var(--fg3)"/><rect x="298.33" y="35.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="302.31" y="36.00" width="2.31" height="14.25" fill="var(--fg3)"/><rect x="306.29" y="20.25" width="2.31" height="15.75" fill="var(--fg3)"/><rect x="310.27" y="9.00" width="2.31" height="27.00" fill="var(--fg3)"/><rect x="314.24" y="12.75" width="2.31" height="23.25" fill="var(--fg3)"/><rect x="318.22" y="36.00" width="2.31" height="10.50" fill="var(--fg3)"/><rect x="322.20" y="36.00" width="2.31" height="18.00" fill="var(--fg3)"/><rect x="326.18" y="36.00" width="2.31" height="25.50" fill="var(--fg3)"/><rect x="330.16" y="27.75" width="2.31" height="8.25" fill="var(--fg3)"/><rect x="334.13" y="5.25" width="2.31" height="30.75" fill="var(--ok)"/><rect x="338.11" y="9.00" width="2.31" height="27.00" fill="var(--ok)"/><rect x="342.09" y="9.00" width="2.31" height="27.00" fill="var(--ok)"/><rect x="346.07" y="36.00" width="2.31" height="10.50" fill="var(--fg3)"/><rect x="350.04" y="36.00" width="2.31" height="6.75" fill="var(--fg3)"/><rect x="354.02" y="16.50" width="2.31" height="19.50" fill="var(--fg3)"/><line x1="0" x2="358" y1="36.0" y2="36.0" stroke="var(--fg3)" stroke-width="0.8" stroke-dasharray="3 3"/></svg></div>
+    <div class="mono" style="display: flex; justify-content: space-between; font-size: 9px; color: var(--fg3); padding-bottom: 12px">
+      <span>01</span><span>23</span><span>45</span><span>68</span><span>90</span>
+    </div>
+    <div class="note" style="padding-bottom: 12px; font-size: 10px">Sopra la linea i numeri usciti più dell'atteso, sotto quelli usciti meno. In colore i dieci estremi.</div>
+  </div>
+
+  <div class="sec">
+    <div class="lbl">Ritardo attuale</div>
+    <div style="margin: 10px 0 4px"><svg width="100%" height="48" viewBox="0 0 358 48"><rect x="0.00" y="5.08" width="2.31" height="42.92" fill="var(--bad)"/><rect x="3.98" y="16.94" width="2.31" height="31.06" fill="var(--fg3)"/><rect x="7.96" y="39.53" width="2.31" height="8.47" fill="var(--fg3)"/><rect x="11.93" y="42.92" width="2.31" height="5.08" fill="var(--fg3)"/><rect x="15.91" y="46.87" width="2.31" height="1.13" fill="var(--fg3)"/><rect x="19.89" y="14.12" width="2.31" height="33.88" fill="var(--fg3)"/><rect x="23.87" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="27.84" y="3.95" width="2.31" height="44.05" fill="var(--bad)"/><rect x="31.82" y="45.18" width="2.31" height="2.82" fill="var(--fg3)"/><rect x="35.80" y="46.87" width="2.31" height="1.13" fill="var(--fg3)"/><rect x="39.78" y="41.22" width="2.31" height="6.78" fill="var(--fg3)"/><rect x="43.76" y="43.48" width="2.31" height="4.52" fill="var(--fg3)"/><rect x="47.73" y="40.09" width="2.31" height="7.91" fill="var(--fg3)"/><rect x="51.71" y="37.27" width="2.31" height="10.73" fill="var(--fg3)"/><rect x="55.69" y="46.87" width="2.31" height="1.13" fill="var(--fg3)"/><rect x="59.67" y="7.34" width="2.31" height="40.66" fill="var(--fg3)"/><rect x="63.64" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="67.62" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="71.60" y="11.86" width="2.31" height="36.14" fill="var(--fg3)"/><rect x="75.58" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="79.56" y="20.33" width="2.31" height="27.67" fill="var(--fg3)"/><rect x="83.53" y="46.31" width="2.31" height="1.69" fill="var(--fg3)"/><rect x="87.51" y="44.61" width="2.31" height="3.39" fill="var(--fg3)"/><rect x="91.49" y="44.61" width="2.31" height="3.39" fill="var(--fg3)"/><rect x="95.47" y="41.79" width="2.31" height="6.21" fill="var(--fg3)"/><rect x="99.44" y="32.75" width="2.31" height="15.25" fill="var(--fg3)"/><rect x="103.42" y="20.33" width="2.31" height="27.67" fill="var(--fg3)"/><rect x="107.40" y="46.87" width="2.31" height="1.13" fill="var(--fg3)"/><rect x="111.38" y="29.36" width="2.31" height="18.64" fill="var(--fg3)"/><rect x="115.36" y="46.87" width="2.31" height="1.13" fill="var(--fg3)"/><rect x="119.33" y="40.09" width="2.31" height="7.91" fill="var(--fg3)"/><rect x="123.31" y="36.14" width="2.31" height="11.86" fill="var(--fg3)"/><rect x="127.29" y="28.80" width="2.31" height="19.20" fill="var(--fg3)"/><rect x="131.27" y="0.00" width="2.31" height="48.00" fill="var(--bad)"/><rect x="135.24" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="139.22" y="42.35" width="2.31" height="5.65" fill="var(--fg3)"/><rect x="143.20" y="29.93" width="2.31" height="18.07" fill="var(--fg3)"/><rect x="147.18" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="151.16" y="22.02" width="2.31" height="25.98" fill="var(--fg3)"/><rect x="155.13" y="45.18" width="2.31" height="2.82" fill="var(--fg3)"/><rect x="159.11" y="40.66" width="2.31" height="7.34" fill="var(--fg3)"/><rect x="163.09" y="45.74" width="2.31" height="2.26" fill="var(--fg3)"/><rect x="167.07" y="46.31" width="2.31" height="1.69" fill="var(--fg3)"/><rect x="171.04" y="9.60" width="2.31" height="38.40" fill="var(--fg3)"/><rect x="175.02" y="9.04" width="2.31" height="38.96" fill="var(--fg3)"/><rect x="179.00" y="32.19" width="2.31" height="15.81" fill="var(--fg3)"/><rect x="182.98" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="186.96" y="38.40" width="2.31" height="9.60" fill="var(--fg3)"/><rect x="190.93" y="23.15" width="2.31" height="24.85" fill="var(--fg3)"/><rect x="194.91" y="36.14" width="2.31" height="11.86" fill="var(--fg3)"/><rect x="198.89" y="33.88" width="2.31" height="14.12" fill="var(--fg3)"/><rect x="202.87" y="2.26" width="2.31" height="45.74" fill="var(--bad)"/><rect x="206.84" y="6.78" width="2.31" height="41.22" fill="var(--fg3)"/><rect x="210.82" y="6.78" width="2.31" height="41.22" fill="var(--bad)"/><rect x="214.80" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="218.78" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="222.76" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="226.73" y="14.12" width="2.31" height="33.88" fill="var(--fg3)"/><rect x="230.71" y="17.51" width="2.31" height="30.49" fill="var(--fg3)"/><rect x="234.69" y="42.35" width="2.31" height="5.65" fill="var(--fg3)"/><rect x="238.67" y="31.06" width="2.31" height="16.94" fill="var(--fg3)"/><rect x="242.64" y="46.31" width="2.31" height="1.69" fill="var(--fg3)"/><rect x="246.62" y="46.87" width="2.31" height="1.13" fill="var(--fg3)"/><rect x="250.60" y="18.64" width="2.31" height="29.36" fill="var(--fg3)"/><rect x="254.58" y="23.15" width="2.31" height="24.85" fill="var(--fg3)"/><rect x="258.56" y="42.35" width="2.31" height="5.65" fill="var(--fg3)"/><rect x="262.53" y="23.72" width="2.31" height="24.28" fill="var(--fg3)"/><rect x="266.51" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="270.49" y="17.51" width="2.31" height="30.49" fill="var(--fg3)"/><rect x="274.47" y="0.00" width="2.31" height="48.00" fill="var(--bad)"/><rect x="278.44" y="15.81" width="2.31" height="32.19" fill="var(--fg3)"/><rect x="282.42" y="5.65" width="2.31" height="42.35" fill="var(--bad)"/><rect x="286.40" y="39.53" width="2.31" height="8.47" fill="var(--fg3)"/><rect x="290.38" y="36.71" width="2.31" height="11.29" fill="var(--fg3)"/><rect x="294.36" y="31.62" width="2.31" height="16.38" fill="var(--fg3)"/><rect x="298.33" y="3.39" width="2.31" height="44.61" fill="var(--bad)"/><rect x="302.31" y="45.74" width="2.31" height="2.26" fill="var(--fg3)"/><rect x="306.29" y="2.26" width="2.31" height="45.74" fill="var(--bad)"/><rect x="310.27" y="46.31" width="2.31" height="1.69" fill="var(--fg3)"/><rect x="314.24" y="28.24" width="2.31" height="19.76" fill="var(--fg3)"/><rect x="318.22" y="35.58" width="2.31" height="12.42" fill="var(--fg3)"/><rect x="322.20" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="326.18" y="47.20" width="2.31" height="0.80" fill="var(--fg3)"/><rect x="330.16" y="46.87" width="2.31" height="1.13" fill="var(--fg3)"/><rect x="334.13" y="20.89" width="2.31" height="27.11" fill="var(--fg3)"/><rect x="338.11" y="36.71" width="2.31" height="11.29" fill="var(--fg3)"/><rect x="342.09" y="4.52" width="2.31" height="43.48" fill="var(--bad)"/><rect x="346.07" y="40.09" width="2.31" height="7.91" fill="var(--fg3)"/><rect x="350.04" y="44.61" width="2.31" height="3.39" fill="var(--fg3)"/><rect x="354.02" y="33.32" width="2.31" height="14.68" fill="var(--fg3)"/></svg></div>
+    <div class="note" style="padding-bottom: 12px; font-size: 10px">In rosso i dieci ritardi più lunghi del periodo.</div>
+  </div>
+
+  <div class="sec">
+    <div class="rowline lbl" style="padding-bottom: 7px">
+      <span style="width: 26px">N.</span><span class="grow">USCITE</span>
+      <span style="width: 48px; text-align: right">FREQ %</span>
+      <span style="width: 34px; text-align: right">RIT</span>
+      <span style="width: 38px; text-align: right">IDX</span>
+    </div>
+    <div class="rowline" style="padding: 7px 0">
+      <span class="mono" style="width: 26px; font-weight: 500">73</span>
+      <span class="mono grow" style="font-size: 12px; color: var(--fg2)">48</span>
+      <span class="mono" style="width: 48px; text-align: right; font-size: 12px; color: var(--fg2)">7,66</span>
+      <span class="mono" style="width: 34px; text-align: right; font-size: 12px; color: var(--fg2)">2</span>
+      <span class="mono" style="width: 38px; text-align: right; font-size: 12px; font-weight: 500; color: var(--ok)">91</span>
+    </div><div class="rowline" style="padding: 7px 0">
+      <span class="mono" style="width: 26px; font-weight: 500">28</span>
+      <span class="mono grow" style="font-size: 12px; color: var(--fg2)">46</span>
+      <span class="mono" style="width: 48px; text-align: right; font-size: 12px; color: var(--fg2)">7,34</span>
+      <span class="mono" style="width: 34px; text-align: right; font-size: 12px; color: var(--fg2)">5</span>
+      <span class="mono" style="width: 38px; text-align: right; font-size: 12px; font-weight: 500; color: var(--ok)">84</span>
+    </div><div class="rowline" style="padding: 7px 0">
+      <span class="mono" style="width: 26px; font-weight: 500">64</span>
+      <span class="mono grow" style="font-size: 12px; color: var(--fg2)">27</span>
+      <span class="mono" style="width: 48px; text-align: right; font-size: 12px; color: var(--fg2)">4,31</span>
+      <span class="mono" style="width: 34px; text-align: right; font-size: 12px; color: var(--fg2)">87</span>
+      <span class="mono" style="width: 38px; text-align: right; font-size: 12px; font-weight: 500; color: var(--warn)">76</span>
+    </div><div class="rowline" style="padding: 7px 0">
+      <span class="mono" style="width: 26px; font-weight: 500">17</span>
+      <span class="mono grow" style="font-size: 12px; color: var(--fg2)">43</span>
+      <span class="mono" style="width: 48px; text-align: right; font-size: 12px; color: var(--fg2)">6,86</span>
+      <span class="mono" style="width: 34px; text-align: right; font-size: 12px; color: var(--fg2)">11</span>
+      <span class="mono" style="width: 38px; text-align: right; font-size: 12px; font-weight: 500; color: var(--warn)">68</span>
+    </div><div class="rowline" style="padding: 7px 0">
+      <span class="mono" style="width: 26px; font-weight: 500">43</span>
+      <span class="mono grow" style="font-size: 12px; color: var(--fg2)">40</span>
+      <span class="mono" style="width: 48px; text-align: right; font-size: 12px; color: var(--fg2)">6,38</span>
+      <span class="mono" style="width: 34px; text-align: right; font-size: 12px; color: var(--fg2)">19</span>
+      <span class="mono" style="width: 38px; text-align: right; font-size: 12px; font-weight: 500; color: var(--warn)">57</span>
+    </div><div class="rowline" style="padding: 7px 0">
+      <span class="mono" style="width: 26px; font-weight: 500">12</span>
+      <span class="mono grow" style="font-size: 12px; color: var(--fg2)">25</span>
+      <span class="mono" style="width: 48px; text-align: right; font-size: 12px; color: var(--fg2)">3,99</span>
+      <span class="mono" style="width: 34px; text-align: right; font-size: 12px; color: var(--fg2)">41</span>
+      <span class="mono" style="width: 38px; text-align: right; font-size: 12px; font-weight: 500; color: var(--bad)">38</span>
+    </div>
+  </div>
+</div>
+<div class="nav">
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 10 4l7 5.5V16a1 1 0 0 1-1 1h-3v-5H7v5H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></div>
+  <div class="on"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h14M6 14V8M10 14V4M14 14v-6"/></svg><span>Analisi</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v3M10 14v3M3 10h3M14 10h3M5.6 5.6l2.1 2.1M12.3 12.3l2.1 2.1M14.4 5.6l-2.1 2.1M7.7 12.3l-2.1 2.1"/></svg><span>Genera</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v5L4 16a1 1 0 0 0 .9 1.5h10.2A1 1 0 0 0 16 16l-4-8V3M7 3h6M6.5 12h7"/></svg><span>Verifica</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="5.5" rx="6" ry="2.5"/><path d="M4 5.5v9c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-9M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"/></svg><span>Dati</span></div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { temaClasse: this.props.tema === 'chiaro' ? 't-chiaro' : 't-scuro' };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0E1116; }
+    a { color: #58A6FF; text-decoration: none; }
+    a:hover { color: #79B8FF; }
+
+    /* Terminale dati: scuro di default, chiaro come variante. */
+    .root {
+      --bg: #0E1116;      /* fondo */
+      --panel: #12171E;   /* fascia/pannello */
+      --line: #232A34;    /* filetto marcato */
+      --hair: #1A2029;    /* filetto sottile */
+      --fg: #E6EDF3;      /* testo primario */
+      --fg2: #8B949E;     /* testo secondario */
+      --fg3: #59626D;     /* testo terziario */
+      --ok: #3FB950;      /* indice alto */
+      --warn: #D8A02A;    /* indice medio */
+      --bad: #F85149;     /* indice basso / negativo */
+      --key: #58A6FF;     /* azione */
+      --grid: #1B222B;    /* reticolo dei grafici */
+      --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+      width: 390px; height: 844px; overflow: hidden;
+      display: flex; flex-direction: column;
+      background: var(--bg); color: var(--fg);
+      font-family: var(--sans);
+      font-size: 13px; line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    .root.t-chiaro {
+      --bg: #FFFFFF; --panel: #F7F8FA; --line: #D5DBE2; --hair: #E6EAEF;
+      --fg: #10151B; --fg2: #5B6672; --fg3: #8A939E;
+      --ok: #197A3D; --warn: #8A6100; --bad: #C0342E; --key: #1B5FC1;
+      --grid: #EDF0F4;
+    }
+
+    .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+    /* Etichetta di sezione: la spaziatura è la firma del terminale. */
+    .lbl {
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg3);
+    }
+
+    .bar {
+      height: 46px; flex: 0 0 46px; display: flex; align-items: center; gap: 10px;
+      padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--bg);
+    }
+    .scroll { flex: 1 1 auto; overflow: hidden; }
+    .pad { padding: 0 16px; }
+
+    .sec { border-top: 1px solid var(--hair); padding: 14px 16px 0; }
+    .sec:first-child { border-top: none; }
+
+    .rowline { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--hair); }
+    .rowline:last-child { border-bottom: none; }
+    .grow { flex: 1 1 auto; min-width: 0; }
+
+    /* Chip numerico: quadrato, non pallina — è uno strumento, non una tombola. */
+    .chip {
+      width: 52px; height: 52px; border-radius: 3px; border: 1px solid;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 19px; font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+    .chip.sm { width: 38px; height: 38px; font-size: 14px; }
+    .chip-ok   { color: var(--ok);   border-color: rgba(63,185,80,0.45);  background: rgba(63,185,80,0.10); }
+    .chip-warn { color: var(--warn); border-color: rgba(216,160,42,0.45); background: rgba(216,160,42,0.10); }
+    .chip-bad  { color: var(--bad);  border-color: rgba(248,81,73,0.45);  background: rgba(248,81,73,0.10); }
+    .chip-flat { color: var(--fg2);  border-color: var(--line);           background: transparent; }
+    .t-chiaro .chip-ok   { border-color: rgba(25,122,61,0.40);  background: rgba(25,122,61,0.07); }
+    .t-chiaro .chip-warn { border-color: rgba(138,97,0,0.40);   background: rgba(138,97,0,0.07); }
+    .t-chiaro .chip-bad  { border-color: rgba(192,52,46,0.40);  background: rgba(192,52,46,0.07); }
+
+    .nav {
+      flex: 0 0 58px; display: flex; border-top: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .nav > div {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--fg3); border-right: 1px solid var(--hair);
+    }
+    .nav > div:last-child { border-right: none; }
+    .nav > div.on { color: var(--fg); background: var(--bg); }
+
+    .btn {
+      height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      border: 1px solid var(--line); border-radius: 3px; background: transparent; color: var(--fg);
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .btn.key { border-color: var(--key); color: var(--key); }
+
+    .note { font-size: 11px; line-height: 1.5; color: var(--fg2); }
+    .warnbox {
+      border-left: 2px solid var(--fg3); padding: 8px 0 8px 10px;
+      font-size: 10.5px; line-height: 1.5; color: var(--fg2);
+    }
+</style>
+</helmet>
+<div class="root {{temaClasse}}">
+<div class="bar">
+  <span style="display: flex; align-items: center; color: var(--key)"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--key)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-6 6 6 6"/></svg></span>
+  <span class="lbl" style="color: var(--fg); font-size: 11px; letter-spacing: 0.16em">Ambi</span>
+  <span class="grow"></span>
+  <span class="mono" style="font-size: 10px; letter-spacing: 0.08em; color: var(--fg2); border: 1px solid var(--line); border-radius: 3px; padding: 3px 7px">4.005 COPPIE</span>
+</div>
+<div class="scroll">
+  <div class="sec" style="padding-bottom: 10px">
+    <div class="lbl">Top ambi statisticamente interessanti</div>
+    <div class="note" style="margin-top: 4px">Valutate tutte le coppie fra 1 e 90 sul periodo selezionato.</div>
+  </div>
+  <div class="pad">
+    <div style="border-bottom: 1px solid var(--hair); padding: 12px 0">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span class="mono" style="font-size: 10px; color: var(--fg3); width: 16px">01</span>
+        <div style="display: flex; gap: 6px"><div class="chip sm chip-ok">17</div><div class="chip sm chip-ok">64</div></div>
+        <span class="grow"></span>
+        <div style="text-align: right">
+          <div class="mono" style="font-size: 20px; font-weight: 500; color: var(--ok); line-height: 1">87</div>
+          <div class="lbl" style="font-size: 8.5px">INDICE</div>
+        </div>
+      </div>
+      <div class="mono" style="display: flex; gap: 14px; margin: 9px 0 0 26px; font-size: 10px; color: var(--fg2)">
+        <span>USC <b style="color: var(--fg); font-weight: 500">6</b></span>
+        <span>ATT <b style="color: var(--fg); font-weight: 500">1,6</b></span>
+        <span>×<b style="color: var(--ok); font-weight: 500">3,82</b></span>
+        <span>RIT <b style="color: var(--fg); font-weight: 500">41</b></span>
+      </div>
+      <div style="border-top: 1px solid var(--hair); margin-top: 10px; padding-top: 10px">
+        <div class="lbl" style="margin-bottom: 6px">Perché</div>
+        <div class="note">Uscite congiunte: 6 su 627 estrazioni, attese dal caso 1,6.</div>
+        <div class="note">Ricorrenza superiore all'atteso del 282%.</div>
+        <div class="note">Ritardo dell'ambo: 41 estrazioni dall'ultima uscita congiunta.</div>
+        <div class="note" style="color: var(--fg3); margin-top: 6px">Questi dati descrivono il passato e non aumentano la probabilità matematica dell'estrazione futura.</div>
+      </div>
+    </div><div style="border-bottom: 1px solid var(--hair); padding: 12px 0">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span class="mono" style="font-size: 10px; color: var(--fg3); width: 16px">02</span>
+        <div style="display: flex; gap: 6px"><div class="chip sm chip-ok">23</div><div class="chip sm chip-ok">71</div></div>
+        <span class="grow"></span>
+        <div style="text-align: right">
+          <div class="mono" style="font-size: 20px; font-weight: 500; color: var(--ok); line-height: 1">84</div>
+          <div class="lbl" style="font-size: 8.5px">INDICE</div>
+        </div>
+      </div>
+      <div class="mono" style="display: flex; gap: 14px; margin: 9px 0 0 26px; font-size: 10px; color: var(--fg2)">
+        <span>USC <b style="color: var(--fg); font-weight: 500">6</b></span>
+        <span>ATT <b style="color: var(--fg); font-weight: 500">1,6</b></span>
+        <span>×<b style="color: var(--ok); font-weight: 500">3,82</b></span>
+        <span>RIT <b style="color: var(--fg); font-weight: 500">9</b></span>
+      </div>
+    </div><div style="border-bottom: 1px solid var(--hair); padding: 12px 0">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span class="mono" style="font-size: 10px; color: var(--fg3); width: 16px">03</span>
+        <div style="display: flex; gap: 6px"><div class="chip sm chip-ok">11</div><div class="chip sm chip-ok">48</div></div>
+        <span class="grow"></span>
+        <div style="text-align: right">
+          <div class="mono" style="font-size: 20px; font-weight: 500; color: var(--ok); line-height: 1">82</div>
+          <div class="lbl" style="font-size: 8.5px">INDICE</div>
+        </div>
+      </div>
+      <div class="mono" style="display: flex; gap: 14px; margin: 9px 0 0 26px; font-size: 10px; color: var(--fg2)">
+        <span>USC <b style="color: var(--fg); font-weight: 500">5</b></span>
+        <span>ATT <b style="color: var(--fg); font-weight: 500">1,6</b></span>
+        <span>×<b style="color: var(--ok); font-weight: 500">3,18</b></span>
+        <span>RIT <b style="color: var(--fg); font-weight: 500">74</b></span>
+      </div>
+    </div><div style="border-bottom: 1px solid var(--hair); padding: 12px 0">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span class="mono" style="font-size: 10px; color: var(--fg3); width: 16px">04</span>
+        <div style="display: flex; gap: 6px"><div class="chip sm chip-warn">28</div><div class="chip sm chip-warn">73</div></div>
+        <span class="grow"></span>
+        <div style="text-align: right">
+          <div class="mono" style="font-size: 20px; font-weight: 500; color: var(--warn); line-height: 1">79</div>
+          <div class="lbl" style="font-size: 8.5px">INDICE</div>
+        </div>
+      </div>
+      <div class="mono" style="display: flex; gap: 14px; margin: 9px 0 0 26px; font-size: 10px; color: var(--fg2)">
+        <span>USC <b style="color: var(--fg); font-weight: 500">5</b></span>
+        <span>ATT <b style="color: var(--fg); font-weight: 500">1,6</b></span>
+        <span>×<b style="color: var(--ok); font-weight: 500">3,18</b></span>
+        <span>RIT <b style="color: var(--fg); font-weight: 500">22</b></span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="nav">
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 10 4l7 5.5V16a1 1 0 0 1-1 1h-3v-5H7v5H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h14M6 14V8M10 14V4M14 14v-6"/></svg><span>Analisi</span></div>
+  <div class="on"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v3M10 14v3M3 10h3M14 10h3M5.6 5.6l2.1 2.1M12.3 12.3l2.1 2.1M14.4 5.6l-2.1 2.1M7.7 12.3l-2.1 2.1"/></svg><span>Genera</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v5L4 16a1 1 0 0 0 .9 1.5h10.2A1 1 0 0 0 16 16l-4-8V3M7 3h6M6.5 12h7"/></svg><span>Verifica</span></div>
+  <div><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--fg3)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="5.5" rx="6" ry="2.5"/><path d="M4 5.5v9c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-9M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"/></svg><span>Dati</span></div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { temaClasse: this.props.tema === 'chiaro' ? 't-chiaro' : 't-scuro' };
+  }
+}
+</script>
+</body>
+</html>
