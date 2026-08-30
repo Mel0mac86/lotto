@@ -162,18 +162,22 @@ struct BacktestView: View {
                            caption: Theme.percent(result.strategy.hitRate * 100, digits: 2))
             }
             Divider().padding(.vertical, 4)
-            LabeledValueRow(label: "Costo teorico", value: Theme.currency(result.strategy.totalCost))
-            LabeledValueRow(label: "Vincite teoriche", value: Theme.currency(result.strategy.totalWinnings))
-            LabeledValueRow(label: "Saldo teorico", value: Theme.currency(result.strategy.net),
-                            tint: result.strategy.net >= 0 ? Theme.high : Theme.low)
-            LabeledValueRow(label: "ROI teorico", value: Theme.percent(result.strategy.roi),
-                            tint: result.strategy.roi >= 0 ? Theme.high : Theme.low)
+            Group {
+                LabeledValueRow(label: "Costo teorico", value: Theme.currency(result.strategy.totalCost))
+                LabeledValueRow(label: "Vincite teoriche", value: Theme.currency(result.strategy.totalWinnings))
+                LabeledValueRow(label: "Saldo teorico", value: Theme.currency(result.strategy.net),
+                                tint: result.strategy.net >= 0 ? Theme.high : Theme.low)
+                LabeledValueRow(label: "ROI teorico", value: Theme.percent(result.strategy.roi),
+                                tint: result.strategy.roi >= 0 ? Theme.high : Theme.low)
+            }
             Divider().padding(.vertical, 4)
-            Text("Baseline casuale")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-            LabeledValueRow(label: "Giocate centrate", value: "\(result.baseline.winningPlays) (\(Theme.percent(result.baseline.hitRate * 100, digits: 2)))")
-            LabeledValueRow(label: "ROI baseline", value: Theme.percent(result.baseline.roi))
+            Group {
+                Text("Baseline casuale")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                LabeledValueRow(label: "Giocate centrate", value: "\(result.baseline.winningPlays) (\(Theme.percent(result.baseline.hitRate * 100, digits: 2)))")
+                LabeledValueRow(label: "ROI baseline", value: Theme.percent(result.baseline.roi))
+            }
 
             ForEach([2, 3, 4, 5, 6], id: \.self) { matched in
                 if result.strategy.hits(matched) > 0 || result.baseline.hits(matched) > 0 {

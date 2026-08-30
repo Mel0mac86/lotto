@@ -59,9 +59,18 @@ final class DecisionTree: @unchecked Sendable {
         let parentImpurity = gini(probability)
 
         for feature in candidateFeatures {
-            let values = indices.map { features[$0][feature] }.sorted()
+            // Quartili stimati su un campione dei valori: ordinarli tutti a ogni nodo
+            // è la parte più costosa dell'addestramento.
+            let step = max(1, indices.count / 512)
+            var values: [Double] = []
+            values.reserveCapacity(indices.count / step + 1)
+            var position = 0
+            while position < indices.count {
+                values.append(features[indices[position]][feature])
+                position += step
+            }
+            values.sort()
             guard let minimum = values.first, let maximum = values.last, maximum > minimum else { continue }
-            // Soglie candidate: quartili, per limitare il costo computazionale.
             let thresholds = [0.25, 0.5, 0.75].map { values[Int(Double(values.count - 1) * $0)] }
             for threshold in Set(thresholds) {
                 var left: [Int] = [], right: [Int] = []

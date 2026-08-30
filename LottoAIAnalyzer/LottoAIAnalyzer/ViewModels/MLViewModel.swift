@@ -50,7 +50,7 @@ final class MLViewModel {
             let computed = await app.compute { bayes.posteriors(context: context) }
             posteriors = computed
             bayesianSummary = bayes.summary(for: computed)
-        case .logisticRegression, .randomForest:
+        case .logisticRegression, .randomForest, .gradientBoosting:
             let game = currentFilter.game
             let contextDraws = context.draws
             let outcome = await app.compute {

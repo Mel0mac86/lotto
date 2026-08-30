@@ -52,7 +52,7 @@ struct MLView: View {
                     }
 
                     switch viewModel.selectedModel {
-                    case .logisticRegression, .randomForest:
+                    case .logisticRegression, .randomForest, .gradientBoosting:
                         if let evaluation = viewModel.evaluation { evaluationCard(evaluation) }
                     case .clustering:
                         if !viewModel.clusters.isEmpty { clustersCard(viewModel.clusters) }
@@ -93,6 +93,12 @@ struct MLView: View {
             HStack {
                 MetricTile(title: "Log loss", value: Theme.decimal(evaluation.logLoss, digits: 4))
                 MetricTile(title: "Log loss baseline", value: Theme.decimal(evaluation.baselineLogLoss, digits: 4))
+            }
+            if let coreMLSummary = evaluation.coreMLSummary {
+                Text(coreMLSummary)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Divider().padding(.vertical, 4)
             Text(evaluation.verdict)

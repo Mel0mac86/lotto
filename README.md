@@ -68,7 +68,7 @@ SwiftUI  →  ViewModel  →  Analytics Engine  →  Statistics Engine
 | `Persistence/` | `DatabaseService` (unico punto di accesso a SwiftData), dati di esempio |
 | `DataImport/` | CSV, JSON, XLSX (con lettore ZIP), sorgenti remote, aggiornamento automatico |
 | `Analytics/` | statistiche, scoring, ambi, terni, cinquine, multi-ruota, Monte Carlo, backtest, pattern, validazione |
-| `ML/` | feature, k-means, regressione logistica, alberi/Random Forest, modello bayesiano |
+| `ML/` | feature, k-means, regressione logistica, Random Forest, gradient boosting, modello bayesiano, aggancio Core ML |
 | `ViewModels/` | stato osservabile delle schermate |
 | `Views/` | dashboard, analisi, generatori, laboratorio, dati, impostazioni |
 | `Report/` | export PDF / CSV / XLSX (con scrittore ZIP) |
@@ -145,9 +145,20 @@ che testando 90 numeri e 4.005 coppie qualche "scoperta" arriva per pura moltepl
 dei test.
 
 **Machine learning** (sperimentale). k-means, regressione logistica, Random Forest,
-modello bayesiano, rilevazione anomalie. Lo split fra addestramento e test è temporale.
-La metrica riportata è l'AUC: su un processo casuale resta attorno a 0,500, ed è esattamente
-questo il risultato che l'app mostra invece di nasconderlo.
+**gradient boosting**, modello bayesiano, rilevazione anomalie — tutto in Swift, senza
+dipendenze. XGBoost e LightGBM non esistono come librerie su iOS: il `GradientBoostingClassifier`
+implementa la stessa famiglia di algoritmi (alberi additivi, passo di Newton di Friedman nelle
+foglie, learning rate, campionamento di righe e colonne).
+
+Lo split fra addestramento e test è temporale. La metrica riportata è l'AUC: su un processo
+casuale resta attorno a 0,500, ed è esattamente questo il risultato che l'app mostra invece di
+nasconderlo. Perché quel numero significhi qualcosa, i test verificano anche il contrario — che
+sugli stessi modelli, con un segnale vero nei dati, l'AUC salga oltre 0,90: senza questo controllo
+un 0,500 potrebbe voler dire semplicemente che il modello è rotto.
+
+`CoreMLScorer` è il punto di innesto per un modello addestrato altrove (scikit-learn, XGBoost)
+e convertito con `coremltools`: se un `.mlmodelc` è presente nel bundle viene usato al posto dei
+modelli interni, e passa comunque dalla stessa valutazione temporale con baseline.
 
 ---
 

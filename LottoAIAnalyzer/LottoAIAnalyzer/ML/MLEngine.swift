@@ -4,6 +4,7 @@ import Foundation
 enum MLModelKind: String, CaseIterable, Identifiable, Sendable {
     case logisticRegression
     case randomForest
+    case gradientBoosting
     case clustering
     case bayesian
     case anomalyDetection
@@ -14,6 +15,7 @@ enum MLModelKind: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .logisticRegression: return "Regressione logistica"
         case .randomForest: return "Random Forest"
+        case .gradientBoosting: return "Gradient Boosting"
         case .clustering: return "Clustering (k-means)"
         case .bayesian: return "Modello bayesiano"
         case .anomalyDetection: return "Rilevazione anomalie"
@@ -26,6 +28,8 @@ enum MLModelKind: String, CaseIterable, Identifiable, Sendable {
             return "Misura quanto le feature storiche siano informative rispetto all'esito di un'estrazione."
         case .randomForest:
             return "Insieme di alberi decisionali usato per il ranking statistico e il confronto con la baseline."
+        case .gradientBoosting:
+            return "Alberi additivi della famiglia XGBoost/LightGBM: il modello più capace fra quelli inclusi, ed è proprio per questo che il suo risultato è il confronto più severo con la casualità."
         case .clustering:
             return "Raggruppa i numeri per profilo statistico (frequenza, ritardo, trend, volatilità)."
         case .bayesian:
@@ -34,11 +38,21 @@ enum MLModelKind: String, CaseIterable, Identifiable, Sendable {
             return "Individua i numeri il cui profilo statistico si discosta di più dalla media."
         }
     }
+
+    /// I modelli supervisionati, gli unici valutabili con AUC e baseline.
+    var isSupervised: Bool {
+        switch self {
+        case .logisticRegression, .randomForest, .gradientBoosting: return true
+        case .clustering, .bayesian, .anomalyDetection: return false
+        }
+    }
 }
 
 /// Esito della valutazione di un modello supervisionato.
 struct MLEvaluation: Sendable {
     var modelName: String
+    /// Valorizzato quando il punteggio proviene da un modello Core ML esterno.
+    var coreMLSummary: String? = nil
     var trainingSamples: Int
     var testSamples: Int
     /// Accuratezza del modello sul test set.
@@ -100,6 +114,9 @@ enum MLEngine {
                          draws: [DrawRecord],
                          game: GameType,
                          progress: (@Sendable (Double) -> Void)? = nil) -> MLEvaluation? {
+        // Solo i modelli supervisionati hanno una baseline e un'AUC da confrontare:
+        // clustering, bayesiano e anomalie hanno percorsi propri.
+        guard kind.isSupervised else { return nil }
         progress?(0.05)
         let dataset = MLFeatureBuilder.supervisedDataset(draws: draws, game: game)
         guard dataset.features.count > 500 else { return nil }
@@ -114,7 +131,8 @@ enum MLEngine {
         guard !testFeatures.isEmpty else { return nil }
 
         var probabilities: [Double] = []
-        let name: String
+        var name: String
+        var coreMLSummary: String?
 
         switch kind {
         case .randomForest:
@@ -123,12 +141,29 @@ enum MLEngine {
             forest.train(features: trainFeatures, labels: trainLabels)
             progress?(0.8)
             probabilities = testFeatures.map { forest.predictProbability($0) }
-        default:
+        case .gradientBoosting:
+            name = MLModelKind.gradientBoosting.displayName
+            let booster = GradientBoostingClassifier(treeCount: 40, maxDepth: 3, learningRate: 0.15)
+            booster.train(features: trainFeatures, labels: trainLabels)
+            progress?(0.8)
+            probabilities = testFeatures.map { booster.predictProbability($0) }
+        case .logisticRegression, .clustering, .bayesian, .anomalyDetection:
             name = MLModelKind.logisticRegression.displayName
             var model = LogisticRegression(featureCount: trainFeatures[0].count)
             model.train(features: trainFeatures, labels: trainLabels)
             progress?(0.8)
             probabilities = testFeatures.map { model.predictProbability($0) }
+        }
+
+        // Se nel bundle è presente un modello Core ML addestrato altrove, ha la
+        // precedenza: viene valutato con lo stesso split temporale e la stessa baseline.
+        if let scorer = CoreMLScorer.load(named: "LottoStatisticalModel") {
+            let external = testFeatures.map { scorer.probability(for: $0) }
+            if external.allSatisfy({ $0 != nil }) {
+                probabilities = external.compactMap { $0 }
+                coreMLSummary = scorer.summary
+                name += " (Core ML)"
+            }
         }
 
         let positiveRate = Double(trainLabels.reduce(0, +)) / Double(trainLabels.count)
@@ -148,6 +183,7 @@ enum MLEngine {
 
         progress?(1)
         return MLEvaluation(modelName: name,
+                            coreMLSummary: coreMLSummary,
                             trainingSamples: trainFeatures.count,
                             testSamples: testFeatures.count,
                             accuracy: accuracy,
