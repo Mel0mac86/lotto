@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Lotto AI Analyzer</title>
+<meta name="description" content="Analisi statistica degli estratti del Lotto e del SuperEnalotto. Le estrazioni sono casuali: le analisi non modificano la probabilità di vincita.">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+
+<!-- Aggiunta alla schermata Home su iOS: apre a schermo intero, senza barre di Safari. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lotto AI">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app"></div>
+<div id="toast-host"></div>
+
+<noscript>
+  <p style="padding:20px">Per usare Lotto AI Analyzer serve JavaScript attivo.</p>
+</noscript>
+
+<script src="js/core/random.js"></script>
+<script src="js/core/models.js"></script>
+<script src="js/core/cooccurrence.js"></script>
+<script src="js/core/statistics.js"></script>
+<script src="js/core/scoring.js"></script>
+<script src="js/core/context.js"></script>
+<script src="js/core/combinations.js"></script>
+<script src="js/core/generators.js"></script>
+<script src="js/core/stats-tests.js"></script>
+<script src="js/core/montecarlo.js"></script>
+<script src="js/core/multiwheel.js"></script>
+<script src="js/core/backtest.js"></script>
+<script src="js/core/ml.js"></script>
+<script src="js/core/patterns.js"></script>
+<script src="js/core/validation.js"></script>
+<script src="js/core/explainer.js"></script>
+
+<script src="js/data/db.js"></script>
+<script src="js/data/import.js"></script>
+<script src="js/data/seed.js"></script>
+
+<script src="js/ui/dom.js"></script>
+<script src="js/ui/charts.js"></script>
+<script src="js/ui/views.js"></script>
+<script src="js/ui/views-analysis.js"></script>
+<script src="js/ui/views-generate.js"></script>
+<script src="js/ui/views-data.js"></script>
+<script src="js/ui/app.js"></script>
+<script>
+  // Applica subito il tema salvato, prima del primo render.
+  (function () {
+    try {
+      var raw = localStorage.getItem('lotto.settings.v1');
+      if (raw && Lotto.views && Lotto.views.applyTheme) {
+        Lotto.views.applyTheme(JSON.parse(raw).theme || 'system');
+      }
+    } catch (error) { /* prima esecuzione: resta il tema di sistema */ }
+  })();
+</script>
+</body>
+</html>

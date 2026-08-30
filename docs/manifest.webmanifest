@@ -1,0 +1,20 @@
+{
+  "name": "Lotto AI Analyzer",
+  "short_name": "Lotto AI",
+  "description": "Analisi statistica degli estratti del Lotto italiano e del SuperEnalotto. Le estrazioni sono casuali: le analisi non modificano la probabilità matematica di vincita.",
+  "lang": "it",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f2f7",
+  "theme_color": "#2166c7",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

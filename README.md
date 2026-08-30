@@ -1,11 +1,22 @@
 # Lotto AI Analyzer
 
-Applicazione iPhone (SwiftUI + SwiftData) per l'**analisi statistica** degli estratti
+Applicazione iPhone per l'**analisi statistica** degli estratti
 del Lotto italiano e del SuperEnalotto.
 
 > **Le estrazioni sono casuali. Le analisi statistiche degli estratti passati non
 > modificano la probabilità matematica di vincita. Le combinazioni generate sono
 > suggerimenti statistici e non previsioni certe.**
+
+Il repository contiene **due implementazioni della stessa app**:
+
+| | Cartella | Come si usa |
+|---|---|---|
+| **Web app (PWA)** | [`docs/`](docs/) | Si apre in Safari e si aggiunge alla schermata Home: funziona a schermo intero, offline, **senza Mac né Xcode** |
+| **App iOS nativa** | [`LottoAIAnalyzer/`](LottoAIAnalyzer/) | Progetto Xcode in SwiftUI, richiede un Mac con Xcode 16 |
+
+I motori di analisi sono gli stessi in entrambe: statistiche, scoring, generatori,
+backtest walk-forward, Monte Carlo, machine learning. La versione web è il porting in
+JavaScript di quella Swift, ed è quella **verificata eseguendola davvero** (vedi sotto).
 
 L'app è progettata come uno strumento di *data analysis*: importa uno storico,
 lo descrive, cerca pattern, genera combinazioni con un **indice statistico** e — questa
@@ -16,7 +27,28 @@ Carlo e test di significatività. Quando non emerge alcun vantaggio, l'app lo sc
 
 ---
 
-## Come aprire il progetto
+## Web app: installarla sull'iPhone
+
+Una volta attivate le GitHub Pages del repository (Settings → Pages → branch, cartella
+`/docs`), l'app è raggiungibile a un indirizzo `https://<utente>.github.io/lotto/`.
+
+Sull'iPhone: aprilo in **Safari** → tasto Condividi → **Aggiungi a Home**. L'icona che
+compare avvia l'app a schermo intero, senza le barre del browser. Dopo la prima
+apertura funziona anche **senza connessione**: il service worker tiene in cache tutto
+il codice e i dati stanno in IndexedDB, sul telefono.
+
+Per provarla in locale basta un server statico qualsiasi:
+
+```bash
+cd docs && python3 -m http.server 8000
+```
+
+Nessuna dipendenza, nessun passo di build, nessuna libreria esterna: HTML, CSS e
+JavaScript scritti a mano, grafici in SVG puro. I calcoli pesanti girano in un
+**Web Worker**, così l'interfaccia resta reattiva anche durante un Monte Carlo da un
+milione di estrazioni.
+
+## App iOS nativa: aprire il progetto
 
 ```bash
 open LottoAIAnalyzer/LottoAIAnalyzer.xcodeproj
@@ -162,11 +194,39 @@ modelli interni, e passa comunque dalla stessa valutazione temporale con baselin
 
 ---
 
+## Come è stata verificata
+
+La versione web è stata **eseguita davvero** in Chromium durante lo sviluppo, non solo
+letta. Due suite end-to-end guidano l'app come farebbe una persona — accettano
+l'avvertenza, importano lo storico, aprono ogni schermata, generano combinazioni,
+lanciano backtest, Monte Carlo e modelli — e verificano che non compaia alcun errore
+JavaScript. Hanno trovato due difetti reali che una semplice rilettura del codice non
+avrebbe rivelato: le schermate raggiunte dalla barra inferiore perdevano lo stato a
+ogni aggiornamento, e la barra spariva nelle schermate di dettaglio.
+
+Le funzioni matematiche sono state controllate contro valori noti: chi quadro ai punti
+critici tabellari, `erfc` e la normale standard a sei decimali, CRC-32 sul vettore di
+prova standard, il round-trip dell'indice su tutte le 4.005 coppie. La prima stesura di
+`erfc` era sbagliata (dava 0,141 dove serviva 0,500) ed è stata riscritta riusando la
+gamma incompleta già verificata.
+
+Il gradient boosting è controllato **su entrambi i lati**: AUC oltre 0,99 quando nei
+dati c'è un segnale vero, e 0,500 su etichette casuali con lo stesso sbilanciamento del
+problema reale. Senza il primo controllo, un'AUC di 0,500 sui dati del Lotto non
+distinguerebbe l'assenza di segnale da un modello rotto.
+
+Sui dati simulati inclusi nell'app — che sono casuali per costruzione — il modello
+riporta un'AUC di circa 0,49 e il verdetto «Nessun vantaggio predittivo dimostrato».
+È il risultato corretto, ed è quello che l'app mostra.
+
+---
+
 ## Privacy
 
 Tutto gira sul dispositivo. Nessuna registrazione, nessun account, nessun dato personale
-raccolto o inviato. Le estrazioni stanno in un database locale, separato dalle preferenze.
-Le uniche connessioni di rete sono quelle verso le sorgenti configurate dall'utente.
+raccolto o inviato. Le estrazioni stanno in un archivio locale (SwiftData sull'app nativa,
+IndexedDB nella web app), separato dalle preferenze. Le uniche connessioni di rete sono
+quelle verso le sorgenti configurate dall'utente.
 
 ---
 
