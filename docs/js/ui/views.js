@@ -76,8 +76,9 @@
   function requireData(container, gameId) {
     if (Lotto.app.state.counts[gameId] > 0) return false;
     container.appendChild(ui.empty('📥', 'Nessuna estrazione',
-      'Importa lo storico di ' + Lotto.GAMES[gameId].name + ' dalla scheda Dati per iniziare.',
-      'Vai ai dati', () => Lotto.app.push(views.data())));
+      'Lo storico ufficiale di ' + Lotto.GAMES[gameId].name
+        + ' è già incluso nell’app: caricalo dalla scheda Dati e l’analisi parte subito.',
+      'Carica lo storico', () => Lotto.app.push(views.data())));
     container.appendChild(ui.disclaimer());
     return true;
   }
@@ -102,7 +103,7 @@
               state.latest.superenalotto ? 'Al ' + ui.shortDate(state.latest.superenalotto) : 'Nessun dato')
           ]),
           Lotto.app.hasData() ? null : el('button.btn.secondary', {
-            text: 'Importa lo storico per iniziare',
+            text: 'Carica lo storico ufficiale incluso',
             onclick: () => Lotto.app.push(views.data())
           })
         ]));

@@ -2,6 +2,10 @@
 
 `formato_importazione.csv` è un modello con le colonne riconosciute dall'app.
 
+Due esempi reali e completi sono i file dello storico ufficiale inclusi nella web app,
+in [`docs/data/`](../../../docs/data): rispettano questo stesso formato e si possono
+importare così come sono.
+
 ## Colonne
 
 | Colonna | Obbligatoria | Note |

@@ -7,9 +7,18 @@
 
   const Lotto = root.Lotto = root.Lotto || {};
   const DB_NAME = 'lotto-ai-analyzer';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   const STORE_DRAWS = 'draws';
   const STORE_SAVED = 'saved';
+
+  /* Le estrazioni non stanno una per riga: sono raggruppate in blocchi
+     gioco|ruota|anno, poche centinaia in tutto.
+
+     Con una riga per estrazione, scrivere i 77.000 record dello storico
+     ufficiale del Lotto richiedeva oltre un minuto e rileggerli quasi due
+     secondi; a blocchi la scrittura sta sotto il secondo e la lettura sotto il
+     decimo di secondo. La differenza la fa il numero di scritture, non il
+     volume dei dati. */
 
   let database = null;
 
@@ -19,10 +28,14 @@
       const request = indexedDB.open(DB_NAME, DB_VERSION);
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
+        // La versione 1 teneva una riga per estrazione: qui l'archivio si ricrea
+        // a blocchi. Le estrazioni si ricaricano dallo storico incluso o dai file.
+        if (db.objectStoreNames.contains(STORE_DRAWS) && event.oldVersion < 2) {
+          db.deleteObjectStore(STORE_DRAWS);
+        }
         if (!db.objectStoreNames.contains(STORE_DRAWS)) {
-          const store = db.createObjectStore(STORE_DRAWS, { keyPath: 'key' });
+          const store = db.createObjectStore(STORE_DRAWS, { keyPath: 'id' });
           store.createIndex('game', 'game', { unique: false });
-          store.createIndex('date', 'date', { unique: false });
         }
         if (!db.objectStoreNames.contains(STORE_SAVED)) {
           db.createObjectStore(STORE_SAVED, { keyPath: 'id' });
@@ -44,26 +57,46 @@
     });
   }
 
+  function blockYear(timestamp) {
+    // Le date sono normalizzate a mezzogiorno UTC: l'anno UTC è quello giusto.
+    return new Date(timestamp).getUTCFullYear();
+  }
+
+  function blockId(game, wheel, year) {
+    return game + '|' + (wheel || '-') + '|' + year;
+  }
+
+  /** Chiave interna al blocco: gioco, ruota e anno li fissa già il blocco. */
+  function entryKey(date, numbers) {
+    return date + '|' + numbers.join('-');
+  }
+
+  function expandBlocks(blocks) {
+    const draws = [];
+    blocks.forEach((block) => {
+      block.draws.forEach((entry) => {
+        draws.push(Lotto.makeDraw(entry.d, block.game, block.wheel, entry.n,
+          entry.j === undefined ? null : entry.j,
+          entry.s === undefined ? null : entry.s));
+      });
+    });
+    return draws.sort((a, b) => a.date - b.date);
+  }
+
+  function blocksOfGame(gameId) {
+    return transaction(STORE_DRAWS, 'readonly')
+      .then((store) => requestToPromise(store.index('game').getAll(gameId)));
+  }
+
   /** Tutte le estrazioni di un gioco, ordinate per data crescente. */
   function loadDraws(gameId) {
-    return transaction(STORE_DRAWS, 'readonly')
-      .then((store) => requestToPromise(store.index('game').getAll(gameId)))
-      .then((rows) => rows
-        .map((row) => Lotto.makeDraw(row.date, row.game, row.wheel, row.numbers, row.jolly, row.superstar))
-        .sort((a, b) => a.date - b.date));
+    return blocksOfGame(gameId).then(expandBlocks);
   }
 
   function loadAllDraws() {
     return transaction(STORE_DRAWS, 'readonly')
       .then((store) => requestToPromise(store.getAll()))
-      .then((rows) => rows
-        .map((row) => Lotto.makeDraw(row.date, row.game, row.wheel, row.numbers, row.jolly, row.superstar))
-        .sort((a, b) => a.date - b.date));
-  }
-
-  function countDraws(gameId) {
-    return transaction(STORE_DRAWS, 'readonly')
-      .then((store) => requestToPromise(store.index('game').count(gameId)));
+      .then(expandBlocks);
   }
 
   /** Valida un'estrazione prima dell'inserimento. */
@@ -79,39 +112,83 @@
     return isFinite(draw.date);
   }
 
-  /** Inserisce le estrazioni scartando i duplicati. */
-  function insertDraws(records, source) {
+  // Blocchi riscritti per transazione. Con lo storico completo del Lotto sono
+  // circa novecento blocchi in tutto, quindi bastano pochi giri.
+  const BLOCKS_PER_TRANSACTION = 150;
+
+  /**
+   * Inserisce le estrazioni scartando i duplicati.
+   *
+   * `onProgress` riceve { done, total } contati in blocchi scritti: serve alle
+   * importazioni lunghe per mostrare l'avanzamento.
+   */
+  function insertDraws(records, source, onProgress) {
     const result = { inserted: 0, duplicates: 0, rejected: 0, errors: [] };
-    return open().then((db) => new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_DRAWS, 'readwrite');
-      const store = tx.objectStore(STORE_DRAWS);
-      const seen = new Set();
+    const groups = new Map();
 
-      records.forEach((record) => {
-        if (!isValid(record)) { result.rejected += 1; return; }
-        const key = Lotto.dedupeKey(record);
-        if (seen.has(key)) { result.duplicates += 1; return; }
-        seen.add(key);
-        const row = {
-          key: key,
-          date: record.date,
-          game: record.game,
-          wheel: record.wheel,
-          numbers: record.numbers,
-          jolly: record.jolly,
-          superstar: record.superstar,
-          source: source || 'import',
-          importedAt: Date.now()
-        };
-        const request = store.add(row);
-        request.onsuccess = () => { result.inserted += 1; };
-        // Chiave già presente: è un duplicato, non un errore.
-        request.onerror = (event) => { result.duplicates += 1; event.preventDefault(); };
-      });
+    records.forEach((record) => {
+      if (!isValid(record)) { result.rejected += 1; return; }
+      const id = blockId(record.game, record.wheel, blockYear(record.date));
+      let list = groups.get(id);
+      if (!list) { list = []; groups.set(id, list); }
+      list.push(record);
+    });
 
-      tx.oncomplete = () => resolve(result);
-      tx.onerror = () => reject(tx.error);
-    }));
+    const ids = Array.from(groups.keys());
+    if (!ids.length) return Promise.resolve(result);
+
+    return open().then((db) => {
+      let offset = 0;
+
+      function writeSlice() {
+        if (offset >= ids.length) return Promise.resolve(result);
+        const slice = ids.slice(offset, offset + BLOCKS_PER_TRANSACTION);
+        offset += slice.length;
+
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_DRAWS, 'readwrite');
+          const store = tx.objectStore(STORE_DRAWS);
+
+          slice.forEach((id) => {
+            const request = store.get(id);
+            request.onsuccess = () => {
+              const incoming = groups.get(id);
+              const block = request.result || {
+                id: id,
+                game: incoming[0].game,
+                wheel: incoming[0].wheel,
+                year: blockYear(incoming[0].date),
+                draws: []
+              };
+              const known = new Set(block.draws.map((entry) => entryKey(entry.d, entry.n)));
+              incoming.forEach((record) => {
+                const key = entryKey(record.date, record.numbers);
+                if (known.has(key)) { result.duplicates += 1; return; }
+                known.add(key);
+                block.draws.push({
+                  d: record.date, n: record.numbers,
+                  j: record.jolly, s: record.superstar
+                });
+                result.inserted += 1;
+              });
+              block.draws.sort((a, b) => a.d - b.d);
+              block.source = source || block.source || 'import';
+              block.updatedAt = Date.now();
+              store.put(block);
+            };
+          });
+
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+          tx.onabort = () => reject(tx.error || new Error('Scrittura interrotta.'));
+        }).then(() => {
+          if (onProgress) onProgress({ done: offset, total: ids.length });
+          return writeSlice();
+        });
+      }
+
+      return writeSlice();
+    });
   }
 
   function deleteGame(gameId) {
@@ -180,7 +257,6 @@
   Lotto.db = {
     loadDraws: loadDraws,
     loadAllDraws: loadAllDraws,
-    countDraws: countDraws,
     insertDraws: insertDraws,
     deleteGame: deleteGame,
     saveCombination: saveCombination,

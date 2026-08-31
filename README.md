@@ -72,7 +72,25 @@ xcodebuild test -project LottoAIAnalyzer/LottoAIAnalyzer.xcodeproj \
 
 ## Primo avvio
 
-L'archivio parte vuoto. In **Dati** puoi:
+Lo **storico ufficiale è già incluso** nella web app: in **Dati** un tocco su *Carica lo
+storico ufficiale* riempie l'archivio, senza doversi procurare nulla.
+
+| Gioco | Estrazioni | Periodo | Fonte |
+|---|---|---|---|
+| Lotto | 77.000, su tutte e 11 le ruote | 7 gennaio 1939 → 29 agosto 2026 | archivio storico ufficiale del Lotto |
+| SuperEnalotto | 4.258 concorsi, con Jolly e SuperStar | 3 dicembre 1997 (concorso n. 1) → 29 agosto 2026 | archivio ufficiale Sisal dal 2009, più un archivio pubblico per gli anni precedenti |
+
+Quello ufficiale del SuperEnalotto non pubblica gli anni prima del 2009: per il periodo
+1997-2008 si usa un archivio pubblico, **confrontato riga per riga con quello ufficiale
+sui 470 concorsi in comune** — combinazione, Jolly, SuperStar e numero di concorso, zero
+discordanze. Se il confronto fallisse, lo script si fermerebbe senza riscrivere il file.
+
+I file stanno in [`docs/data/`](docs/data) come normali CSV, con la provenienza
+documentata nel [README di quella cartella](docs/data/README.md), e si rigenerano con
+gli script in [`tools/`](tools). Il caricamento avviene sul telefono: i dati non escono
+dal dispositivo.
+
+In alternativa, sempre da **Dati**, puoi:
 
 1. **Importare un file** CSV, JSON o XLSX (vedi
    [`Resources/FORMATO.md`](LottoAIAnalyzer/LottoAIAnalyzer/Resources/FORMATO.md)
@@ -81,6 +99,9 @@ L'archivio parte vuoto. In **Dati** puoi:
    (API ufficiale, portale open data, un tuo export). Nessuna sorgente è preconfigurata;
 3. **Caricare dati di esempio**: estrazioni **simulate**, generate localmente con un
    seme fisso, per esplorare l'interfaccia. Sono etichettate come tali ovunque.
+
+L'app iOS nativa, che non ha i file inclusi, parte invece con l'archivio vuoto e usa i
+punti 1-3.
 
 ---
 

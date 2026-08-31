@@ -2,12 +2,13 @@
    I dati delle estrazioni stanno in IndexedDB e non passano da qui. */
 'use strict';
 
-const CACHE = 'lotto-ai-analyzer-v1';
+const CACHE = 'lotto-ai-analyzer-v2';
 
 const SHELL = [
   './',
   'index.html',
   'manifest.webmanifest',
+  'data/manifest.json',
   'css/app.css',
   'js/core/random.js',
   'js/core/models.js',
@@ -27,6 +28,7 @@ const SHELL = [
   'js/core/explainer.js',
   'js/data/db.js',
   'js/data/import.js',
+  'js/data/archive.js',
   'js/data/seed.js',
   'js/ui/dom.js',
   'js/ui/charts.js',
@@ -64,6 +66,9 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   // Le richieste verso le sorgenti dati dell'utente non vanno mai in cache.
   if (url.origin !== self.location.origin) return;
+  // Nemmeno i CSV dello storico: si leggono una volta e finiscono in IndexedDB,
+  // tenerne una seconda copia occuperebbe megabyte sul telefono per nulla.
+  if (url.pathname.endsWith('.csv')) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {

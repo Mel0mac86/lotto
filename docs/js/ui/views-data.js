@@ -8,6 +8,18 @@
   const el = ui.el;
   const views = Lotto.views = Lotto.views || {};
 
+  /* Stato dello storico incluso nel pacchetto. Vive a livello di modulo così
+     sopravvive ai ri-render della schermata durante il caricamento. */
+  const archiveState = {
+    manifest: null,
+    manifestReady: false,
+    requested: false,
+    busy: null,
+    label: '',
+    value: 0,
+    results: {}
+  };
+
   views.data = function () {
     let importGame = Lotto.app.state.settings.defaultGame;
     let lastResult = null;
@@ -73,6 +85,9 @@
           ]));
         });
         container.appendChild(ui.card('Archivio locale', '💾', [archive]));
+
+        // --- Storico ufficiale incluso
+        container.appendChild(officialArchiveCard(reload));
 
         // --- Importazione
         const fileInput = el('input', {
@@ -163,6 +178,103 @@
 
   function infoRow(label, value) {
     return el('div.row', {}, [el('span.grow.note', { text: label }), el('span', { text: value })]);
+  }
+
+  /** Lo storico ufficiale viaggia insieme all'app: un tocco e l'archivio è pieno,
+      senza che l'utente debba procurarsi i file. */
+  function officialArchiveCard(reload) {
+    const state = Lotto.app.state;
+
+    if (!archiveState.requested) {
+      archiveState.requested = true;
+      Lotto.archive.loadManifest().then((manifest) => {
+        archiveState.manifest = manifest;
+        archiveState.manifestReady = true;
+        Lotto.app.refresh();
+      });
+    }
+
+    const manifest = archiveState.manifest;
+    const body = el('div.rows');
+
+    Object.keys(Lotto.GAMES).forEach((gameId) => {
+      const game = Lotto.GAMES[gameId];
+      const info = manifest && manifest.archives ? manifest.archives[gameId] : null;
+      const loading = archiveState.busy === gameId;
+      const already = state.counts[gameId] > 0;
+      const result = archiveState.results[gameId];
+
+      body.appendChild(el('div', { style: { marginBottom: '14px' } }, [
+        el('div', { text: game.symbol + ' ' + game.name, style: { fontWeight: '500' } }),
+        el('p.note', {
+          text: info
+            ? ui.integer(info.draws) + ' estrazioni · dal ' + info.firstDate + ' al ' + info.lastDate
+              + (info.wheels ? ' · ' + info.wheels + ' ruote' : '')
+            : (archiveState.manifestReady
+              // L'indice serve solo a descrivere il file: senza, lo storico si carica lo stesso.
+              ? 'Descrizione non disponibile: il file si può caricare comunque.'
+              : 'Lettura dell’indice in corso…')
+        }),
+        info ? el('p.note', { text: 'Fonte: ' + info.source }) : null,
+        loading ? ui.progress(archiveState.label, archiveState.value) : el('button.btn' + (already ? '.secondary' : ''), {
+          text: already ? 'Aggiorna dallo storico ufficiale' : 'Carica lo storico ufficiale',
+          disabled: (!archiveState.manifestReady || archiveState.busy) ? 'disabled' : null,
+          onclick: () => loadOfficialArchive(gameId, reload)
+        }),
+        result && result.error
+          ? el('p.note', { text: result.error, style: { color: 'var(--low)' } })
+          : (result ? el('p.note', {
+            text: ui.integer(result.inserted) + ' estrazioni aggiunte · '
+              + ui.integer(result.duplicates) + ' già presenti'
+              + (result.rejected ? ' · ' + ui.integer(result.rejected) + ' righe scartate' : '')
+          }) : null)
+      ]));
+    });
+
+    return ui.card('Storico ufficiale incluso', '📚', [
+      body,
+      el('p.note', {
+        text: manifest && manifest.retrievedAt
+          ? 'Copia scaricata il ' + manifest.retrievedAt + ' e conservata nel pacchetto dell’app. '
+            + 'Il caricamento avviene sul dispositivo: i dati non escono dal telefono. '
+            + 'Reimportare lo stesso storico è sicuro, i duplicati vengono ignorati.'
+          : 'Il caricamento avviene sul dispositivo: i dati non escono dal telefono.'
+      }),
+      el('p.note', { text: 'Per le estrazioni successive a questa copia usa l’importazione da file o una sorgente remota.' })
+    ]);
+  }
+
+  function loadOfficialArchive(gameId, reload) {
+    archiveState.busy = gameId;
+    archiveState.label = 'Scaricamento dello storico…';
+    archiveState.value = 0;
+    delete archiveState.results[gameId];
+    Lotto.app.refresh();
+
+    Lotto.archive.loadArchive(gameId, (progress) => {
+      if (progress.phase === 'download') {
+        archiveState.label = 'Scaricamento dello storico…';
+        archiveState.value = 0;
+      } else if (progress.phase === 'parse') {
+        archiveState.label = 'Lettura delle estrazioni…';
+        archiveState.value = 0.05;
+      } else {
+        archiveState.label = 'Archiviazione in corso…';
+        archiveState.value = 0.05 + 0.95 * (progress.done / Math.max(progress.total, 1));
+      }
+      Lotto.app.refresh();
+    }).then((result) => {
+      archiveState.busy = null;
+      archiveState.results[gameId] = result;
+      Lotto.app.toast('Storico ' + Lotto.GAMES[gameId].name + ': '
+        + ui.integer(result.inserted) + ' estrazioni caricate.');
+      return reload();
+    }).catch((error) => {
+      archiveState.busy = null;
+      archiveState.results[gameId] = { error: error.message };
+      Lotto.app.toast('Caricamento non riuscito: ' + error.message, true);
+      Lotto.app.refresh();
+    });
   }
 
   function remoteSourceCard(reload) {

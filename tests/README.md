@@ -15,6 +15,7 @@ npm install playwright-core
 # 3. esegui
 node tests/e2e-base.js       # avvio, import, analisi, generazione, salvataggio
 node tests/e2e-completo.js   # ambi, terni, multi-ruota, Monte Carlo, pattern, ML, backtest
+node tests/e2e-storico.js    # caricamento dello storico ufficiale incluso, sui dati reali
 ```
 
 Il percorso di Chromium è impostato nei file (`executablePath`): va adattato al proprio
@@ -22,11 +23,15 @@ sistema, oppure sostituito con `playwright` completo che scarica il browser da s
 
 ## Che cosa hanno trovato
 
-Non sono decorativi: alla prima esecuzione hanno rivelato due difetti reali che una
-rilettura del codice non aveva mostrato.
+Non sono decorativi: hanno rivelato tre difetti reali che una rilettura del codice
+non aveva mostrato.
 
 1. **Stato perso nelle schermate della barra inferiore.** `refresh()` ricreava la
    schermata da zero invece di ridisegnare quella esistente, azzerandone lo stato
    locale: l'importazione dei dati di esempio restava bloccata su «in corso».
 2. **Barra di navigazione assente nelle schermate di dettaglio**, contro il
    comportamento abituale delle app iOS.
+3. **Archivio locale troppo lento sui dati veri.** `e2e-storico.js` misura il
+   caricamento delle 77.000 estrazioni dello storico ufficiale del Lotto: ci
+   voleva più di un minuto. Le estrazioni erano una riga IndexedDB ciascuna;
+   raggruppandole in blocchi gioco|ruota|anno il tempo è sceso a circa un secondo.

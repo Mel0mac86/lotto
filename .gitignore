@@ -25,3 +25,10 @@ Carthage/Build/
 design/*-redesign.html
 __pycache__/
 *.pyc
+.cache/
+
+# Dipendenze dei test end-to-end
+node_modules/
+
+# Schermate di lavoro
+screenshot-*.png
