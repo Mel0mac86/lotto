@@ -35,6 +35,23 @@ originali e li convertono. Il manifesto `manifest.json` è generato da
   verifica la parte 1997-2008 non sarebbe controllabile.
 - Il SuperStar è stato introdotto nel 2006: prima di allora la colonna è vuota.
 
+## `timesfm-lotto.json` e `timesfm-previsioni.json`
+
+Uscita di [TimesFM 3.0](https://github.com/google-research/timesfm), il modello di
+forecasting per serie temporali di Google Research, applicato alle estrazioni.
+
+- `timesfm-lotto.json` è la **misura**: prova walk-forward su 150 estrazioni, tre
+  codifiche diverse delle estrazioni, due baseline e un controllo positivo su dati
+  sintetici prevedibili.
+- `timesfm-previsioni.json` sono i **numeri previsti** per la prossima estrazione di
+  ogni ruota, con dentro una copia della misura. L'app non mostra mai i numeri senza
+  la misura accanto.
+
+Si rigenerano con `tools/timesfm_lotto.py` e `tools/timesfm_previsione.py` (vedi il
+[README di `tools/`](../../tools/README.md)). Il modello gira in Python: non può
+girare nel browser, quindi le previsioni sono calcolate una volta e distribuite come
+file. Restano ferme all'ultima estrazione vista, indicata nel file stesso.
+
 ## Nota
 
 Le estrazioni sono fatti pubblici, ripubblicati qui per uso statistico e personale.

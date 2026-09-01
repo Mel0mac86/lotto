@@ -16,6 +16,7 @@ npm install playwright-core
 node tests/e2e-base.js       # avvio, import, analisi, generazione, salvataggio
 node tests/e2e-completo.js   # ambi, terni, multi-ruota, Monte Carlo, pattern, ML, backtest
 node tests/e2e-storico.js    # caricamento dello storico ufficiale incluso, sui dati reali
+node tests/e2e-timesfm.js    # previsioni TimesFM sempre accanto alla loro misura
 ```
 
 Il percorso di Chromium è impostato nei file (`executablePath`): va adattato al proprio

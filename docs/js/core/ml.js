@@ -23,7 +23,10 @@
     { id: 'bayesian', name: 'Modello bayesiano', supervised: false,
       purpose: 'Stima la probabilità a posteriori di ciascun numero e la confronta con quella teorica.' },
     { id: 'anomalyDetection', name: 'Rilevazione anomalie', supervised: false,
-      purpose: 'Individua i numeri il cui profilo statistico si discosta di più dalla media.' }
+      purpose: 'Individua i numeri il cui profilo statistico si discosta di più dalla media.' },
+    // Calcolato fuori dal telefono: vedi docs/js/data/timesfm.js.
+    { id: 'timesfm', name: 'TimesFM 3.0 (Google)', supervised: true, external: true,
+      purpose: 'Modello di forecasting pre-addestrato di Google Research, primo in classifica sui benchmark di serie temporali. Qui è messo alla prova sulle estrazioni: prevede i numeri della prossima estrazione, e accanto trovi la misura di quanto quella previsione valga.' }
   ];
 
   function normalizeColumn(values) {

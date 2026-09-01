@@ -1,0 +1,126 @@
+{
+  "modello": "TimesFM 3.0 (google/timesfm-3.0-pytorch)",
+  "contesto": 512,
+  "estrazioniValutate": 150,
+  "eseguitoIl": "01/09/2026",
+  "controllo": [
+    {
+      "nome": "TimesFM 3.0 · codifica binaria",
+      "estrazioni": 150,
+      "centri": 728,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 4.8533,
+      "z": 111.954,
+      "p": 0.0,
+      "auc": 0.9831,
+      "significativo": true
+    },
+    {
+      "nome": "TimesFM 3.0 · codifica ritardo",
+      "estrazioni": 150,
+      "centri": 708,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 4.72,
+      "z": 108.691,
+      "p": 0.0,
+      "auc": 0.9775,
+      "significativo": true
+    },
+    {
+      "nome": "TimesFM 3.0 · codifica frequenza",
+      "estrazioni": 150,
+      "centri": 162,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 1.08,
+      "z": 19.629,
+      "p": 0.0,
+      "auc": 0.8289,
+      "significativo": true
+    },
+    {
+      "nome": "Baseline: 5 numeri a caso",
+      "estrazioni": 150,
+      "centri": 35,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 0.2333,
+      "z": -1.087,
+      "p": 0.2768,
+      "auc": null,
+      "significativo": false
+    },
+    {
+      "nome": "Baseline: i 5 più frequenti",
+      "estrazioni": 150,
+      "centri": 155,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 1.0333,
+      "z": 18.487,
+      "p": 0.0,
+      "auc": null,
+      "significativo": true
+    }
+  ],
+  "ruota": "BA",
+  "storico": {
+    "estrazioni": 7370,
+    "dal": "19390107",
+    "al": "20260829"
+  },
+  "reale": [
+    {
+      "nome": "TimesFM 3.0 · codifica binaria",
+      "estrazioni": 150,
+      "centri": 38,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 0.2533,
+      "z": -0.598,
+      "p": 0.5498,
+      "auc": 0.4909,
+      "significativo": false
+    },
+    {
+      "nome": "TimesFM 3.0 · codifica ritardo",
+      "estrazioni": 150,
+      "centri": 47,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 0.3133,
+      "z": 0.87,
+      "p": 0.3843,
+      "auc": 0.5231,
+      "significativo": false
+    },
+    {
+      "nome": "TimesFM 3.0 · codifica frequenza",
+      "estrazioni": 150,
+      "centri": 48,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 0.32,
+      "z": 1.033,
+      "p": 0.3016,
+      "auc": 0.5195,
+      "significativo": false
+    },
+    {
+      "nome": "Baseline: 5 numeri a caso",
+      "estrazioni": 150,
+      "centri": 27,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 0.18,
+      "z": -2.392,
+      "p": 0.0167,
+      "auc": null,
+      "significativo": false
+    },
+    {
+      "nome": "Baseline: i 5 più frequenti",
+      "estrazioni": 150,
+      "centri": 39,
+      "centriAttesi": 41.67,
+      "centriPerEstrazione": 0.26,
+      "z": -0.435,
+      "p": 0.6636,
+      "auc": null,
+      "significativo": false
+    }
+  ]
+}

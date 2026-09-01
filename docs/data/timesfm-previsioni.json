@@ -1,0 +1,794 @@
+{
+  "modello": "TimesFM 3.0 (google/timesfm-3.0-pytorch)",
+  "contesto": 512,
+  "generatoIl": "01/09/2026",
+  "ultimaEstrazioneVista": "20260829",
+  "ruote": {
+    "Bari": {
+      "perCodifica": {
+        "binaria": [
+          59,
+          52,
+          53,
+          76,
+          10,
+          88,
+          51,
+          29,
+          82,
+          65
+        ],
+        "ritardo": [
+          4,
+          47,
+          89,
+          30,
+          83,
+          65,
+          52,
+          79,
+          53,
+          41
+        ],
+        "frequenza": [
+          87,
+          19,
+          42,
+          70,
+          78,
+          61,
+          47,
+          64,
+          10,
+          63
+        ]
+      },
+      "combinata": [
+        10,
+        52,
+        65,
+        29,
+        47,
+        70,
+        87,
+        64,
+        76,
+        46
+      ],
+      "cinquina": [
+        10,
+        29,
+        47,
+        52,
+        65
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Cagliari": {
+      "perCodifica": {
+        "binaria": [
+          72,
+          87,
+          22,
+          57,
+          84,
+          2,
+          36,
+          7,
+          65,
+          14
+        ],
+        "ritardo": [
+          57,
+          2,
+          72,
+          43,
+          10,
+          29,
+          87,
+          58,
+          46,
+          81
+        ],
+        "frequenza": [
+          72,
+          46,
+          53,
+          2,
+          57,
+          59,
+          87,
+          47,
+          70,
+          15
+        ]
+      },
+      "combinata": [
+        72,
+        57,
+        2,
+        87,
+        46,
+        58,
+        29,
+        88,
+        14,
+        47
+      ],
+      "cinquina": [
+        2,
+        46,
+        57,
+        72,
+        87
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Firenze": {
+      "perCodifica": {
+        "binaria": [
+          4,
+          27,
+          57,
+          62,
+          80,
+          71,
+          12,
+          5,
+          26,
+          1
+        ],
+        "ritardo": [
+          41,
+          71,
+          32,
+          5,
+          27,
+          73,
+          62,
+          4,
+          57,
+          21
+        ],
+        "frequenza": [
+          42,
+          1,
+          56,
+          84,
+          73,
+          53,
+          69,
+          82,
+          35,
+          17
+        ]
+      },
+      "combinata": [
+        27,
+        4,
+        57,
+        1,
+        41,
+        62,
+        5,
+        84,
+        17,
+        81
+      ],
+      "cinquina": [
+        1,
+        4,
+        27,
+        41,
+        57
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Genova": {
+      "perCodifica": {
+        "binaria": [
+          79,
+          11,
+          86,
+          85,
+          47,
+          14,
+          26,
+          27,
+          61,
+          43
+        ],
+        "ritardo": [
+          14,
+          33,
+          65,
+          86,
+          40,
+          24,
+          79,
+          85,
+          55,
+          8
+        ],
+        "frequenza": [
+          66,
+          32,
+          11,
+          33,
+          35,
+          89,
+          40,
+          86,
+          64,
+          2
+        ]
+      },
+      "combinata": [
+        86,
+        11,
+        79,
+        85,
+        47,
+        55,
+        44,
+        64,
+        14,
+        43
+      ],
+      "cinquina": [
+        11,
+        47,
+        79,
+        85,
+        86
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Milano": {
+      "perCodifica": {
+        "binaria": [
+          9,
+          49,
+          53,
+          47,
+          85,
+          21,
+          89,
+          74,
+          15,
+          45
+        ],
+        "ritardo": [
+          9,
+          45,
+          52,
+          43,
+          1,
+          80,
+          48,
+          74,
+          70,
+          49
+        ],
+        "frequenza": [
+          19,
+          24,
+          80,
+          50,
+          88,
+          37,
+          49,
+          48,
+          71,
+          40
+        ]
+      },
+      "combinata": [
+        49,
+        45,
+        80,
+        48,
+        52,
+        71,
+        9,
+        63,
+        74,
+        43
+      ],
+      "cinquina": [
+        45,
+        48,
+        49,
+        52,
+        80
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Napoli": {
+      "perCodifica": {
+        "binaria": [
+          71,
+          76,
+          64,
+          81,
+          65,
+          70,
+          10,
+          84,
+          39,
+          3
+        ],
+        "ritardo": [
+          53,
+          64,
+          76,
+          50,
+          69,
+          70,
+          42,
+          39,
+          71,
+          30
+        ],
+        "frequenza": [
+          10,
+          19,
+          30,
+          1,
+          83,
+          68,
+          71,
+          39,
+          81,
+          45
+        ]
+      },
+      "combinata": [
+        71,
+        70,
+        81,
+        39,
+        64,
+        10,
+        76,
+        1,
+        30,
+        6
+      ],
+      "cinquina": [
+        39,
+        64,
+        70,
+        71,
+        81
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Palermo": {
+      "perCodifica": {
+        "binaria": [
+          39,
+          70,
+          45,
+          38,
+          18,
+          34,
+          59,
+          90,
+          15,
+          86
+        ],
+        "ritardo": [
+          61,
+          18,
+          57,
+          8,
+          39,
+          70,
+          38,
+          56,
+          45,
+          75
+        ],
+        "frequenza": [
+          57,
+          38,
+          24,
+          61,
+          18,
+          28,
+          12,
+          56,
+          8,
+          40
+        ]
+      },
+      "combinata": [
+        18,
+        38,
+        61,
+        70,
+        39,
+        59,
+        8,
+        57,
+        15,
+        12
+      ],
+      "cinquina": [
+        18,
+        38,
+        39,
+        61,
+        70
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Roma": {
+      "perCodifica": {
+        "binaria": [
+          40,
+          75,
+          60,
+          52,
+          66,
+          22,
+          10,
+          46,
+          62,
+          63
+        ],
+        "ritardo": [
+          75,
+          25,
+          52,
+          57,
+          40,
+          16,
+          10,
+          28,
+          76,
+          65
+        ],
+        "frequenza": [
+          16,
+          85,
+          7,
+          62,
+          52,
+          51,
+          31,
+          34,
+          3,
+          38
+        ]
+      },
+      "combinata": [
+        52,
+        16,
+        40,
+        75,
+        51,
+        10,
+        63,
+        37,
+        64,
+        60
+      ],
+      "cinquina": [
+        16,
+        40,
+        51,
+        52,
+        75
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Torino": {
+      "perCodifica": {
+        "binaria": [
+          79,
+          17,
+          48,
+          88,
+          49,
+          75,
+          72,
+          50,
+          27,
+          23
+        ],
+        "ritardo": [
+          70,
+          86,
+          71,
+          79,
+          38,
+          29,
+          48,
+          78,
+          31,
+          17
+        ],
+        "frequenza": [
+          73,
+          40,
+          48,
+          34,
+          38,
+          86,
+          15,
+          85,
+          66,
+          23
+        ]
+      },
+      "combinata": [
+        48,
+        86,
+        79,
+        75,
+        17,
+        31,
+        38,
+        62,
+        23,
+        72
+      ],
+      "cinquina": [
+        17,
+        48,
+        75,
+        79,
+        86
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Venezia": {
+      "perCodifica": {
+        "binaria": [
+          69,
+          76,
+          48,
+          61,
+          47,
+          23,
+          51,
+          80,
+          15,
+          27
+        ],
+        "ritardo": [
+          16,
+          48,
+          27,
+          79,
+          62,
+          23,
+          13,
+          56,
+          50,
+          59
+        ],
+        "frequenza": [
+          49,
+          46,
+          21,
+          54,
+          23,
+          11,
+          19,
+          62,
+          51,
+          7
+        ]
+      },
+      "combinata": [
+        23,
+        48,
+        69,
+        51,
+        79,
+        27,
+        16,
+        59,
+        46,
+        18
+      ],
+      "cinquina": [
+        23,
+        48,
+        51,
+        69,
+        79
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    },
+    "Nazionale": {
+      "perCodifica": {
+        "binaria": [
+          68,
+          6,
+          73,
+          58,
+          89,
+          46,
+          12,
+          76,
+          45,
+          8
+        ],
+        "ritardo": [
+          88,
+          68,
+          43,
+          50,
+          6,
+          71,
+          7,
+          89,
+          17,
+          73
+        ],
+        "frequenza": [
+          70,
+          6,
+          9,
+          5,
+          73,
+          7,
+          80,
+          17,
+          50,
+          76
+        ]
+      },
+      "combinata": [
+        6,
+        73,
+        89,
+        58,
+        71,
+        50,
+        64,
+        9,
+        46,
+        19
+      ],
+      "cinquina": [
+        6,
+        58,
+        71,
+        73,
+        89
+      ],
+      "ultimaEstrazioneVista": "20260829"
+    }
+  },
+  "valutazione": {
+    "modello": "TimesFM 3.0 (google/timesfm-3.0-pytorch)",
+    "contesto": 512,
+    "estrazioniValutate": 150,
+    "eseguitoIl": "01/09/2026",
+    "controllo": [
+      {
+        "nome": "TimesFM 3.0 · codifica binaria",
+        "estrazioni": 150,
+        "centri": 728,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 4.8533,
+        "z": 111.954,
+        "p": 0.0,
+        "auc": 0.9831,
+        "significativo": true
+      },
+      {
+        "nome": "TimesFM 3.0 · codifica ritardo",
+        "estrazioni": 150,
+        "centri": 708,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 4.72,
+        "z": 108.691,
+        "p": 0.0,
+        "auc": 0.9775,
+        "significativo": true
+      },
+      {
+        "nome": "TimesFM 3.0 · codifica frequenza",
+        "estrazioni": 150,
+        "centri": 162,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 1.08,
+        "z": 19.629,
+        "p": 0.0,
+        "auc": 0.8289,
+        "significativo": true
+      },
+      {
+        "nome": "Baseline: 5 numeri a caso",
+        "estrazioni": 150,
+        "centri": 35,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 0.2333,
+        "z": -1.087,
+        "p": 0.2768,
+        "auc": null,
+        "significativo": false
+      },
+      {
+        "nome": "Baseline: i 5 più frequenti",
+        "estrazioni": 150,
+        "centri": 155,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 1.0333,
+        "z": 18.487,
+        "p": 0.0,
+        "auc": null,
+        "significativo": true
+      }
+    ],
+    "ruota": "BA",
+    "storico": {
+      "estrazioni": 7370,
+      "dal": "19390107",
+      "al": "20260829"
+    },
+    "reale": [
+      {
+        "nome": "TimesFM 3.0 · codifica binaria",
+        "estrazioni": 150,
+        "centri": 38,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 0.2533,
+        "z": -0.598,
+        "p": 0.5498,
+        "auc": 0.4909,
+        "significativo": false
+      },
+      {
+        "nome": "TimesFM 3.0 · codifica ritardo",
+        "estrazioni": 150,
+        "centri": 47,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 0.3133,
+        "z": 0.87,
+        "p": 0.3843,
+        "auc": 0.5231,
+        "significativo": false
+      },
+      {
+        "nome": "TimesFM 3.0 · codifica frequenza",
+        "estrazioni": 150,
+        "centri": 48,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 0.32,
+        "z": 1.033,
+        "p": 0.3016,
+        "auc": 0.5195,
+        "significativo": false
+      },
+      {
+        "nome": "Baseline: 5 numeri a caso",
+        "estrazioni": 150,
+        "centri": 27,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 0.18,
+        "z": -2.392,
+        "p": 0.0167,
+        "auc": null,
+        "significativo": false
+      },
+      {
+        "nome": "Baseline: i 5 più frequenti",
+        "estrazioni": 150,
+        "centri": 39,
+        "centriAttesi": 41.67,
+        "centriPerEstrazione": 0.26,
+        "z": -0.435,
+        "p": 0.6636,
+        "auc": null,
+        "significativo": false
+      }
+    ]
+  }
+}

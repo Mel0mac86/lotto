@@ -2,13 +2,14 @@
    I dati delle estrazioni stanno in IndexedDB e non passano da qui. */
 'use strict';
 
-const CACHE = 'lotto-ai-analyzer-v2';
+const CACHE = 'lotto-ai-analyzer-v3';
 
 const SHELL = [
   './',
   'index.html',
   'manifest.webmanifest',
   'data/manifest.json',
+  'data/timesfm-previsioni.json',
   'css/app.css',
   'js/core/random.js',
   'js/core/models.js',
@@ -29,6 +30,7 @@ const SHELL = [
   'js/data/db.js',
   'js/data/import.js',
   'js/data/archive.js',
+  'js/data/timesfm.js',
   'js/data/seed.js',
   'js/ui/dom.js',
   'js/ui/charts.js',

@@ -617,6 +617,22 @@
 
         if (!started) { container.appendChild(ui.disclaimer()); return; }
 
+        // TimesFM non gira nel browser: le previsioni arrivano già calcolate.
+        if (model === 'timesfm') {
+          views.asyncPanel(container, 'Lettura delle previsioni…',
+            () => Lotto.timesfm.load(),
+            (host, payload) => {
+              if (!payload) {
+                host.appendChild(ui.empty('📭', 'Previsioni non disponibili',
+                  'Il file delle previsioni di TimesFM non è nel pacchetto di questa versione.'));
+              } else {
+                timesfmCards(host, payload, filter);
+              }
+              host.appendChild(ui.disclaimer());
+            });
+          return;
+        }
+
         views.asyncPanel(container, 'Addestramento e valutazione…',
           (onProgress) => Lotto.app.compute('ml',
             { filter: filter, model: model, weights: Lotto.app.state.settings.weights }, onProgress),
@@ -634,6 +650,93 @@
       }
     };
   };
+
+  /** Le previsioni di TimesFM e, sotto, quanto valgono davvero.
+      Le due schede vanno sempre insieme: i numeri da soli direbbero una
+      cosa che la misura smentisce. */
+  function timesfmCards(host, payload, filter) {
+    const wheelName = Lotto.GAMES[filter.game].usesWheels && filter.wheel !== 'all'
+      ? filter.wheel : 'Bari';
+    const wheel = payload.ruote ? payload.ruote[wheelName] : null;
+
+    // --- I numeri previsti
+    if (wheel) {
+      const encodings = el('div.rows');
+      Object.keys(wheel.perCodifica || {}).forEach((key) => {
+        encodings.appendChild(el('div.row', {}, [
+          el('span.grow.note', { text: 'Codifica ' + key }),
+          el('span', { text: wheel.perCodifica[key].slice(0, 5).map(ui.pad).join('  '),
+            style: { fontSize: '13px', fontVariantNumeric: 'tabular-nums' } })
+        ]));
+      });
+
+      host.appendChild(ui.card('Previsione per ' + wheelName, '🔮', [
+        el('p.note', { text: 'Cinquina con il punteggio più alto, dalle ultime '
+          + ui.integer(payload.contesto) + ' estrazioni della ruota.' }),
+        ui.combinationRow(wheel.cinquina),
+        el('p.note', { text: 'I dieci numeri meglio posizionati: '
+          + wheel.combinata.map(ui.pad).join('  ') }),
+        encodings,
+        el('p.note', { text: 'Ultima estrazione vista dal modello: '
+          + formatCompactDate(wheel.ultimaEstrazioneVista)
+          + ' · previsioni generate il ' + payload.generatoIl + '.' })
+      ]));
+    }
+
+    // --- Quanto vale la previsione
+    const evaluation = payload.valutazione;
+    if (!evaluation) return;
+
+    const best = Lotto.timesfm.bestRow(evaluation.reale);
+    const baseline = Lotto.timesfm.baselineRow(evaluation.reale);
+    const controlBest = Lotto.timesfm.bestRow(evaluation.controllo);
+
+    host.appendChild(ui.card('Quanto vale questa previsione', '🔬', [
+      el('p.note', { text: 'Prova walk-forward su ' + ui.integer(evaluation.estrazioniValutate)
+        + ' estrazioni della ruota ' + (evaluation.ruota || '') + ': a ogni passo il modello '
+        + 'vede soltanto le estrazioni precedenti, poi si contano i centri della cinquina prevista.' }),
+      ui.metrics([
+        ui.metric('Centri per estrazione', best ? ui.decimal(best.centriPerEstrazione, 3) : '—',
+          'TimesFM'),
+        ui.metric('Attesi dal caso', ui.decimal(0.2778, 3), '5 numeri su 90'),
+        ui.metric('Baseline casuale', baseline ? ui.decimal(baseline.centriPerEstrazione, 3) : '—',
+          'stesso numero di giocate')
+      ]),
+      best ? ui.metrics([
+        ui.metric('AUC', ui.decimal(best.auc, 3), '0,500 = casuale',
+          best.auc > 0.55 ? 'var(--medium)' : 'var(--high)'),
+        ui.metric('p', ui.decimal(best.p, 4), best.significativo ? 'significativo' : 'non significativo')
+      ]) : null,
+      el('p', {
+        text: best && best.significativo
+          ? 'Su questo campione la previsione batte il caso in modo statisticamente significativo. Il risultato va replicato su altre ruote e altri periodi prima di considerarlo reale.'
+          : Lotto.DISCLAIMER.noEdge + ' La cinquina prevista non centra più numeri di cinque numeri estratti a caso.',
+        style: { fontSize: '14px' }
+      })
+    ]));
+
+    // --- Il controllo che rende leggibile il risultato
+    if (controlBest) {
+      host.appendChild(ui.card('Controllo: lo stesso modello su dati prevedibili', '🧪', [
+        el('p.note', { text: 'La stessa procedura, sulle stesse metriche, applicata a estrazioni '
+          + 'inventate e volutamente regolari. Serve a distinguere «il modello non trova nulla» '
+          + 'da «la procedura è rotta».' }),
+        ui.metrics([
+          ui.metric('Centri per estrazione', ui.decimal(controlBest.centriPerEstrazione, 2),
+            'su 5 possibili', 'var(--high)'),
+          ui.metric('AUC', ui.decimal(controlBest.auc, 3), 'dati regolari', 'var(--high)')
+        ]),
+        el('p.note', { text: 'Sui dati regolari TimesFM azzecca quasi tutta la cinquina. '
+          + 'La procedura funziona: quando c’è qualcosa da prevedere, lo prevede. '
+          + 'Sulle estrazioni vere non c’è.' })
+      ]));
+    }
+  }
+
+  function formatCompactDate(value) {
+    if (!value || value.length !== 8) return value || '—';
+    return value.slice(6, 8) + '/' + value.slice(4, 6) + '/' + value.slice(0, 4);
+  }
 
   function evaluationCard(evaluation) {
     return ui.card(evaluation.modelName, '🧠', [

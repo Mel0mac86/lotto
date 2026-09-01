@@ -3,7 +3,7 @@
   "private": true,
   "description": "Strumenti di sviluppo della web app: solo i test end-to-end in tests/.",
   "scripts": {
-    "test": "node tests/e2e-base.js && node tests/e2e-completo.js && node tests/e2e-storico.js"
+    "test": "node tests/e2e-base.js && node tests/e2e-completo.js && node tests/e2e-storico.js && node tests/e2e-timesfm.js"
   },
   "devDependencies": {
     "playwright-core": "^1.62.1"

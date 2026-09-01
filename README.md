@@ -105,6 +105,52 @@ punti 1-3.
 
 ---
 
+## TimesFM: un modello di Google messo alla prova sulle estrazioni
+
+[TimesFM 3.0](https://github.com/google-research/timesfm) è il modello *foundation* per
+serie temporali di Google Research: oltre un miliardo di parametri, primo in classifica
+su fev-bench, TIME Benchmark e GIFT-Eval. In **AI Analyst** compare fra i modelli
+selezionabili e mostra i numeri che prevede per la prossima estrazione di ogni ruota.
+
+Accanto ai numeri, sempre, c'è la misura di quanto valgono — perché senza quella i
+numeri direbbero una cosa che i dati smentiscono.
+
+**Come è stato messo alla prova.** Prova walk-forward su 150 estrazioni della ruota di
+Bari: a ogni passo il modello vede soltanto le estrazioni precedenti. Le estrazioni gli
+sono state date in tre codifiche diverse, per non penalizzarlo con una
+rappresentazione infelice — serie binaria di uscita, ritardo, frequenza mobile — tutte e
+90 le serie insieme, in modalità multivariata. Si prendono i 5 numeri col punteggio più
+alto e si contano i centri.
+
+| | Centri per estrazione | AUC | p |
+|---|---|---|---|
+| **Controllo** — estrazioni sintetiche regolari | **4,85** su 5 | **0,983** | — |
+| TimesFM, codifica binaria — estrazioni vere | 0,253 | 0,491 | 0,55 |
+| TimesFM, codifica ritardo — estrazioni vere | 0,313 | 0,523 | 0,38 |
+| TimesFM, codifica frequenza — estrazioni vere | 0,320 | 0,520 | 0,30 |
+| Baseline: 5 numeri a caso | 0,180 | — | — |
+| Attesa teorica (5 su 90) | 0,278 | 0,500 | — |
+
+**Il controllo positivo è la parte importante.** Sulle estrazioni *inventate e
+volutamente regolari* TimesFM azzecca 4,85 numeri su 5, con AUC 0,983: la procedura
+funziona, il modello funziona, le metriche funzionano. Quando c'è qualcosa da prevedere,
+lo prevede. Sulle estrazioni vere tutte e tre le codifiche restano dentro il rumore
+attorno allo 0,278 atteso dal caso, e l'AUC resta attaccata allo 0,500.
+
+Senza quel controllo, «AUC 0,50» non si distinguerebbe da un bug.
+
+Un dettaglio che vale la pena notare: la baseline dei 5 numeri a caso è finita a 0,180
+centri, cioè *sotto* l'attesa, con p = 0,017. Su 150 estrazioni una deviazione
+«significativa» capita per puro caso — è esattamente il motivo per cui un singolo
+p < 0,05 non dimostra niente, in nessuna direzione.
+
+I due script (`tools/timesfm_lotto.py`, `tools/timesfm_previsione.py`) rendono tutto
+rieseguibile. Il modello gira in Python su PyTorch e non può girare nel browser: le
+previsioni sono calcolate una volta e distribuite come file, ferme all'ultima estrazione
+indicata nel file stesso.
+
+---
+
 ## Architettura
 
 ```
