@@ -105,6 +105,78 @@ punti 1-3.
 
 ---
 
+## Un pattern vero, trovato nell'archivio
+
+Con 77.000 estrazioni la potenza statistica è enorme: una distorsione anche piccola
+lascia una traccia. [`tools/cerca_pattern.py`](tools/cerca_pattern.py) esegue **48 test
+decisi in anticipo** — uniformità dei 90 numeri per ruota e per epoca, ripetizioni
+dall'estrazione precedente, autocorrelazione a distanza 1-5, giorno della settimana,
+proprietà aggregate, i 4.005 ambi — e chiude con la correzione di Benjamini-Hochberg,
+perché facendo decine di test qualcuno risulta «significativo» per forza.
+
+**Cinque test sopravvivono, e descrivono tutti lo stesso effetto.**
+
+> Fra il **1970 e il 1999** i numeri alti uscivano più dei bassi.
+
+| Periodo | Estrazioni | Media dei numeri estratti | z |
+|---|---|---|---|
+| 1939-1969 | 15.981 | 45,614 | +1,27 |
+| **1970-1999** | **17.120** | **46,180** | **+7,83** |
+| 2000-2026 | 43.899 | 45,492 | −0,14 |
+
+Se le estrazioni fossero uniformi la media varrebbe 45,500 sempre. Nel trentennio
+centrale è quasi otto deviazioni standard sopra: p ≈ 5·10⁻¹⁵.
+
+**Le verifiche che lo rendono credibile:**
+
+- **Replica interna** — separando gli anni pari (z = +5,19) dai dispari (z = +5,88),
+  l'effetto compare in entrambe le metà.
+- **Tutte le ruote** — 10 su 10 hanno media sopra 45,5 in quel periodo (Cagliari +7,65,
+  Roma +6,07). La probabilità che dieci monete diano tutte testa è 1 su 1.024.
+- **È liscio, non a macchie** — la correlazione fra il valore di un numero e la sua
+  frequenza è r = **+0,691** nel 1970-1999 e **−0,016** nel 2000-2026. Gli ultimi nove
+  numeri escono il 5,9% più dell'atteso, i primi nove il 3,6% meno.
+- **Controlli negativi puliti** — prima del 1970 e dopo il 1999 non c'è niente.
+- **Ha una firma fisica** — l'effetto è fortissimo sul **primo** numero estratto
+  (z = +6,76) e si spegne verso il quinto (+1,59); nel periodo pulito tutte le posizioni
+  sono piatte. Un errore nei dati non avrebbe motivo di seguire l'ordine di uscita.
+
+Che cosa lo abbia causato, i dati non lo dicono: è coerente con un'urna o un lotto di
+palline leggermente sbilanciati, in un'epoca di estrazioni meccaniche, ma è
+un'ipotesi, non una conclusione.
+
+### E adesso la parte scomoda
+
+Il pattern è reale. Non serve a vincere.
+
+Giocando sempre **86-87-88-89-90** — regola fissa, decisa senza guardare i dati — si
+sarebbero centrati 0,2943 numeri per estrazione nel 1970-1999 contro 0,2778 attesi:
+**+6,0%** (z = +4,33). Fuori da quel periodo, +0,6% e +0,5%: niente.
+
+E scegliendo i numeri su un periodo per giocarli sul successivo — l'unico modo onesto,
+perché il futuro non si conosce — il vantaggio evapora:
+
+| Numeri scelti su | Giocati su | Vantaggio |
+|---|---|---|
+| 1970-1984 | 1985-1999 | +0,3% |
+| 1970-1989 | 1990-1999 | +4,6% |
+| 1970-1999 | 2000-2026 | +0,9% |
+
+Il Lotto restituisce ai giocatori circa il 60-70% del giocato: per andare in pari
+servirebbe un vantaggio fra il **43% e il 67%**. Il pattern più forte in 87 anni di
+storia ne vale il 6%, in un'epoca finita da un quarto di secolo. Per distinguere un
+vantaggio del 6% dal caso, giocando, servirebbero circa 2.000 estrazioni: tredici anni
+a tre estrazioni a settimana.
+
+Gli altri 43 test non hanno trovato nulla. L'ambo più anomalo su 4.005 (il 45-49, uscito
+133 volte contro 192 attese) ha p = 0,072 una volta corretto per il fatto di essere il
+massimo di una lista lunga — cioè è esattamente quello che ci si aspetta di trovare
+guardando 4.005 coppie.
+
+La scheda **Trova pattern** dell'app racconta tutto questo, ultima parte compresa.
+
+---
+
 ## TimesFM: un modello di Google messo alla prova sulle estrazioni
 
 [TimesFM 3.0](https://github.com/google-research/timesfm) è il modello *foundation* per
@@ -144,8 +216,44 @@ centri, cioè *sotto* l'attesa, con p = 0,017. Su 150 estrazioni una deviazione
 «significativa» capita per puro caso — è esattamente il motivo per cui un singolo
 p < 0,05 non dimostra niente, in nessuna direzione.
 
-I due script (`tools/timesfm_lotto.py`, `tools/timesfm_previsione.py`) rendono tutto
-rieseguibile. Il modello gira in Python su PyTorch e non può girare nel browser: le
+### E se gli si dà un pattern che c'è davvero?
+
+Il trentennio 1970-1999 offre un banco di prova che non capita spesso: **dati reali con
+dentro un pattern vero e verificato.** TimesFM se ne accorge?
+
+La domanda si misura meglio guardando non i 5 numeri scelti, ma tutti e 90 i punteggi:
+se il modello capisse che i numeri alti escono di più, il punteggio che assegna
+crescerebbe col valore del numero. Ho fatto girare la stessa procedura su tre
+condizioni — Cagliari, la ruota con la distorsione più forte.
+
+| Codifica | Estrazioni casuali<br>*nessun pattern* | Cagliari 1970-99<br>***pattern vero*** | Cagliari 2000-26<br>*nessun pattern* |
+|---|---|---|---|
+| binaria | +0,013 (z +1,38) | +0,015 (z +1,98) | −0,036 (z −3,99) |
+| ritardo | +0,020 (z +3,01) | +0,056 (z +6,33) | −0,009 (z −1,33) |
+| frequenza | **+0,049 (z +10,07)** | +0,044 (z +4,18) | +0,005 (z +0,62) |
+
+Guardando solo la colonna centrale si griderebbe alla scoperta: z = +6,33.
+
+**La prima colonna smonta tutto.** Su estrazioni sintetiche perfettamente casuali, dove
+per costruzione non c'è assolutamente niente, la codifica «frequenza» produce già
++0,049 con z = +10,07 — *più* di quanto produca sull'epoca col pattern vero. Non è una
+scoperta: è una tendenza del modello a dare punteggi più alti ai numeri più alti,
+indipendentemente dai dati. E il z nominale è gonfiato perché finestre consecutive da
+512 estrazioni si sovrappongono quasi del tutto, quindi i 150 passi non sono
+indipendenti: lo si legge nella colonna di destra, dove un −3,99 compare su dati che
+non hanno alcun pattern.
+
+Nessuna codifica mostra sull'epoca distorta un segnale che il rumore puro non produca
+già da solo. **TimesFM non si accorge del pattern**, nemmeno di uno reale, verificato e
+grande otto deviazioni standard in aggregato — perché su una singola estrazione quel
+pattern vale il 6%, e il 6% dentro l'incertezza di 512 estrazioni non si vede.
+
+Senza il controllo negativo avrei riportato una scoperta. È lo stesso motivo per cui la
+prova sui dati veri ha un controllo positivo: **una misura senza i suoi controlli non
+significa niente**, e vale sia quando dice di no sia quando dice di sì.
+
+I tre script (`tools/timesfm_lotto.py`, `tools/timesfm_previsione.py`,
+`tools/cerca_pattern.py`) rendono tutto rieseguibile. Il modello gira in Python su PyTorch e non può girare nel browser: le
 previsioni sono calcolate una volta e distribuite come file, ferme all'ultima estrazione
 indicata nel file stesso.
 

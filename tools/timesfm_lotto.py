@@ -61,7 +61,7 @@ HITS_VARIANCE = (DRAWN * (DRAWN / NUMBERS) * (1 - DRAWN / NUMBERS)
 
 # --------------------------------------------------------------------- dati
 
-def load_wheel(code):
+def load_wheel(code, since=None, until=None):
   draws = []
   with open(CSV, encoding="utf-8") as handle:
     next(handle)
@@ -69,9 +69,24 @@ def load_wheel(code):
       parts = line.rstrip("\n").split(";")
       if parts[1] != code:
         continue
+      if since and parts[0] < since:
+        continue
+      if until and parts[0] >= until:
+        continue
       draws.append((parts[0], [int(v) for v in parts[2:7]]))
   draws.sort(key=lambda row: row[0])
   return draws
+
+
+def uniform_draws(count, seed=99):
+  """Estrazioni FINTE e perfettamente casuali, senza alcuna struttura.
+
+  Serve come controllo NEGATIVO: dà il vero livello di rumore delle metriche.
+  Serve soprattutto alla correlazione col valore del numero, il cui z nominale
+  è gonfiato perché finestre consecutive da centinaia di estrazioni si
+  sovrappongono quasi del tutto, e quindi i passi non sono indipendenti."""
+  rng = random.Random(seed)
+  return [("%08d" % t, rng.sample(range(1, NUMBERS + 1), DRAWN)) for t in range(count)]
 
 
 def synthetic_draws(count, seed=11):
@@ -150,12 +165,32 @@ def area_under_roc(scores, labels):
   return (rank_sum - positives * (positives + 1) / 2.0) / (positives * negatives)
 
 
-def summarize(name, hits, steps, auc):
+def spearman_with_number(scores):
+  """Correlazione fra il punteggio previsto e il valore del numero (1..90).
+
+  È la domanda «il modello ha capito che i numeri alti escono di più?», ed è
+  molto più sensibile del conteggio dei centri: usa tutti e 90 i punteggi di
+  ogni estrazione invece dei soli 5 scelti."""
+  order = sorted(range(NUMBERS), key=lambda n: scores[n])
+  rank = [0.0] * NUMBERS
+  for position, n in enumerate(order):
+    rank[n] = position + 1.0
+  values = [n + 1.0 for n in range(NUMBERS)]
+  mean_rank = sum(rank) / NUMBERS
+  mean_value = sum(values) / NUMBERS
+  numerator = sum((rank[n] - mean_rank) * (values[n] - mean_value) for n in range(NUMBERS))
+  denominator = math.sqrt(
+    sum((rank[n] - mean_rank) ** 2 for n in range(NUMBERS))
+    * sum((values[n] - mean_value) ** 2 for n in range(NUMBERS)))
+  return numerator / denominator if denominator else 0.0
+
+
+def summarize(name, hits, steps, auc, correlations=None):
   expected = EXPECTED_HITS * steps
   sigma = math.sqrt(HITS_VARIANCE * steps)
   z = (hits - expected) / sigma if sigma > 0 else 0.0
   p = math.erfc(abs(z) / math.sqrt(2))  # bilaterale
-  return {
+  entry = {
     "nome": name,
     "estrazioni": steps,
     "centri": hits,
@@ -166,6 +201,13 @@ def summarize(name, hits, steps, auc):
     "auc": None if auc is None or math.isnan(auc) else round(auc, 4),
     "significativo": bool(p < 0.05 and z > 0),
   }
+  if correlations:
+    mean = sum(correlations) / len(correlations)
+    variance = sum((c - mean) ** 2 for c in correlations) / max(len(correlations) - 1, 1)
+    error = math.sqrt(variance / len(correlations))
+    entry["correlazioneConIlValore"] = round(mean, 4)
+    entry["zCorrelazione"] = round(mean / error, 2) if error > 0 else 0.0
+  return entry
 
 
 # ------------------------------------------------------------------ prova
@@ -180,6 +222,7 @@ def run(draws, label, forecaster, steps, context, verbose=True):
 
   hits = collections.Counter()
   pooled = {key: {"scores": [], "labels": []} for key in matrices}
+  correlations = collections.defaultdict(list)
   rng = random.Random(4242)
   began = time.time()
 
@@ -204,6 +247,7 @@ def run(draws, label, forecaster, steps, context, verbose=True):
       hits["timesfm/" + key] += sum(1 for n in picks if labels[n])
       pooled[key]["scores"].extend(scores)
       pooled[key]["labels"].extend(labels)
+      correlations[key].append(spearman_with_number(scores))
 
     # Baseline: 5 a caso, e i 5 più frequenti nel contesto.
     hits["casuale"] += sum(1 for n in rng.sample(range(NUMBERS), DRAWN) if labels[n])
@@ -220,7 +264,8 @@ def run(draws, label, forecaster, steps, context, verbose=True):
   for key in matrices:
     results.append(summarize("TimesFM 3.0 · codifica %s" % key,
                              hits["timesfm/" + key], steps,
-                             area_under_roc(pooled[key]["scores"], pooled[key]["labels"])))
+                             area_under_roc(pooled[key]["scores"], pooled[key]["labels"]),
+                             correlations[key]))
   results.append(summarize("Baseline: 5 numeri a caso", hits["casuale"], steps, None))
   results.append(summarize("Baseline: i 5 più frequenti", hits["frequenza storica"], steps, None))
   return results
@@ -231,7 +276,13 @@ def main():
   parser.add_argument("--steps", type=int, default=150)
   parser.add_argument("--context", type=int, default=512)
   parser.add_argument("--wheel", default="BA")
+  parser.add_argument("--from", dest="since", default=None,
+                      help="considera solo le estrazioni da questa data (aaaammgg)")
+  parser.add_argument("--until", default=None,
+                      help="considera solo le estrazioni prima di questa data (aaaammgg)")
   parser.add_argument("--skip-control", action="store_true")
+  parser.add_argument("--solo-controllo-negativo", action="store_true",
+                      help="solo il controllo su estrazioni casuali, per misurare il rumore")
   parser.add_argument("--out", default=os.path.join(ROOT, "docs", "data", "timesfm-lotto.json"))
   args = parser.parse_args()
 
@@ -248,6 +299,20 @@ def main():
     "eseguitoIl": time.strftime("%d/%m/%Y"),
   }
 
+  if args.solo_controllo_negativo:
+    print("controllo negativo su estrazioni puramente casuali…", flush=True)
+    noise = uniform_draws(args.context + args.steps + 50)
+    report["controlloNegativo"] = run(noise, "rumore", forecaster, args.steps, args.context)
+    for row in report["controlloNegativo"]:
+      print("   ", row["nome"], "->", row["centriPerEstrazione"], "centri/estrazione",
+            "auc", row["auc"], "corr(valore)", row.get("correlazioneConIlValore"),
+            "z", row.get("zCorrelazione"), flush=True)
+    with open(args.out, "w", encoding="utf-8") as handle:
+      json.dump(report, handle, ensure_ascii=False, indent=2)
+      handle.write("\n")
+    print("scritto:", args.out)
+    return
+
   if not args.skip_control:
     print("controllo positivo su estrazioni sintetiche prevedibili…", flush=True)
     control = synthetic_draws(args.context + args.steps + 50)
@@ -257,13 +322,17 @@ def main():
             "auc", row["auc"], flush=True)
 
   print("estrazioni vere, ruota %s…" % args.wheel, flush=True)
-  draws = load_wheel(args.wheel)
+  draws = load_wheel(args.wheel, args.since, args.until)
   report["ruota"] = args.wheel
+  if args.since or args.until:
+    report["periodo"] = {"da": args.since, "a": args.until}
   report["storico"] = {"estrazioni": len(draws), "dal": draws[0][0], "al": draws[-1][0]}
   report["reale"] = run(draws, "ruota " + args.wheel, forecaster, args.steps, args.context)
   for row in report["reale"]:
     print("   ", row["nome"], "->", row["centriPerEstrazione"], "centri/estrazione",
-          "auc", row["auc"], "p", row["p"], flush=True)
+          "auc", row["auc"], "p", row["p"],
+          "corr(valore)", row.get("correlazioneConIlValore"),
+          "z", row.get("zCorrelazione"), flush=True)
 
   with open(args.out, "w", encoding="utf-8") as handle:
     json.dump(report, handle, ensure_ascii=False, indent=2)

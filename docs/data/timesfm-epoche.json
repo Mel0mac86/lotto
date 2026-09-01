@@ -1,0 +1,149 @@
+{
+  "domanda": "TimesFM riesce ad accorgersi del pattern vero presente nel 1970-1999?",
+  "metrica": "correlazione di Spearman fra il punteggio previsto e il valore del numero",
+  "avvertenza": "Il z nominale è gonfiato: finestre consecutive da 512 estrazioni si sovrappongono quasi del tutto, quindi i 150 passi non sono indipendenti. Il controllo negativo serve proprio a misurare il vero rumore.",
+  "condizioni": [
+    {
+      "nome": "Estrazioni casuali sintetiche",
+      "patternVero": false,
+      "ruota": null,
+      "periodo": "nessuno",
+      "codifiche": {
+        "binaria": {
+          "nome": "TimesFM 3.0 · codifica binaria",
+          "estrazioni": 150,
+          "centri": 35,
+          "centriAttesi": 41.67,
+          "centriPerEstrazione": 0.2333,
+          "z": -1.087,
+          "p": 0.2768,
+          "auc": 0.5102,
+          "significativo": false,
+          "correlazioneConIlValore": 0.013,
+          "zCorrelazione": 1.38
+        },
+        "ritardo": {
+          "nome": "TimesFM 3.0 · codifica ritardo",
+          "estrazioni": 150,
+          "centri": 41,
+          "centriAttesi": 41.67,
+          "centriPerEstrazione": 0.2733,
+          "z": -0.109,
+          "p": 0.9134,
+          "auc": 0.4985,
+          "significativo": false,
+          "correlazioneConIlValore": 0.0201,
+          "zCorrelazione": 3.01
+        },
+        "frequenza": {
+          "nome": "TimesFM 3.0 · codifica frequenza",
+          "estrazioni": 150,
+          "centri": 45,
+          "centriAttesi": 41.67,
+          "centriPerEstrazione": 0.3,
+          "z": 0.544,
+          "p": 0.5866,
+          "auc": 0.5027,
+          "significativo": false,
+          "correlazioneConIlValore": 0.0493,
+          "zCorrelazione": 10.07
+        }
+      }
+    },
+    {
+      "nome": "Cagliari, 1970-1999",
+      "patternVero": true,
+      "ruota": "CA",
+      "periodo": "1970-1999",
+      "codifiche": {
+        "binaria": {
+          "nome": "TimesFM 3.0 · codifica binaria",
+          "estrazioni": 150,
+          "centri": 34,
+          "centriAttesi": 41.67,
+          "centriPerEstrazione": 0.2267,
+          "z": -1.251,
+          "p": 0.2111,
+          "auc": 0.494,
+          "significativo": false,
+          "correlazioneConIlValore": 0.0154,
+          "zCorrelazione": 1.98
+        },
+        "ritardo": {
+          "nome": "TimesFM 3.0 · codifica ritardo",
+          "estrazioni": 150,
+          "centri": 39,
+          "centriAttesi": 41.67,
+          "centriPerEstrazione": 0.26,
+          "z": -0.435,
+          "p": 0.6636,
+          "auc": 0.4993,
+          "significativo": false,
+          "correlazioneConIlValore": 0.0559,
+          "zCorrelazione": 6.33
+        },
+        "frequenza": {
+          "nome": "TimesFM 3.0 · codifica frequenza",
+          "estrazioni": 150,
+          "centri": 46,
+          "centriAttesi": 41.67,
+          "centriPerEstrazione": 0.3067,
+          "z": 0.707,
+          "p": 0.4797,
+          "auc": 0.505,
+          "significativo": false,
+          "correlazioneConIlValore": 0.0438,
+          "zCorrelazione": 4.18
+        }
+      }
+    },
+    {
+      "nome": "Cagliari, 2000-2026",
+      "patternVero": false,
+      "ruota": "CA",
+      "periodo": "2000-2026",
+      "codifiche": {
+        "binaria": {
+          "nome": "TimesFM 3.0 · codifica binaria",
+          "estrazioni": 150,
+          "centri": 44,
+          "centriAttesi": 41.67,
+          "centriPerEstrazione": 0.2933,
+          "z": 0.381,
+          "p": 0.7035,
+          "auc": 0.4876,
+          "significativo": false,
+          "correlazioneConIlValore": -0.0355,
+          "zCorrelazione": -3.99
+        },
+        "ritardo": {
+          "nome": "TimesFM 3.0 · codifica ritardo",
+          "estrazioni": 150,
+          "centri": 40,
+          "centriAttesi": 41.67,
+          "centriPerEstrazione": 0.2667,
+          "z": -0.272,
+          "p": 0.7857,
+          "auc": 0.4857,
+          "significativo": false,
+          "correlazioneConIlValore": -0.0091,
+          "zCorrelazione": -1.33
+        },
+        "frequenza": {
+          "nome": "TimesFM 3.0 · codifica frequenza",
+          "estrazioni": 150,
+          "centri": 39,
+          "centriAttesi": 41.67,
+          "centriPerEstrazione": 0.26,
+          "z": -0.435,
+          "p": 0.6636,
+          "auc": 0.4898,
+          "significativo": false,
+          "correlazioneConIlValore": 0.0045,
+          "zCorrelazione": 0.62
+        }
+      }
+    }
+  ],
+  "conclusione": "Sui dati senza alcun pattern la codifica «frequenza» produce già una correlazione di +0,049 con z +10,07: è una tendenza del modello, non una scoperta. Nell'epoca con il pattern vero la stessa codifica si ferma a +0,044, cioè meno del rumore. Nessuna codifica mostra sull'epoca distorta un segnale che il controllo negativo non produca già da solo: TimesFM non si accorge del pattern. E senza il controllo negativo avremmo scambiato quello z per una scoperta."
+}

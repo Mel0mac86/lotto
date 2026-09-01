@@ -13,19 +13,29 @@
 
   const Lotto = root.Lotto = root.Lotto || {};
   const FILE = 'data/timesfm-previsioni.json';
+  const ERAS_FILE = 'data/timesfm-epoche.json';
 
   let promise = null;
+  let erasPromise = null;
+
+  function fetchJson(file) {
+    return fetch(file, { cache: 'default' })
+      .then((response) => {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .catch(() => null);
+  }
 
   function load() {
-    if (!promise) {
-      promise = fetch(FILE, { cache: 'default' })
-        .then((response) => {
-          if (!response.ok) throw new Error('HTTP ' + response.status);
-          return response.json();
-        })
-        .catch(() => null);
-    }
+    if (!promise) promise = fetchJson(FILE);
     return promise;
+  }
+
+  /** L'esperimento sulle epoche: il modello messo davanti a un pattern vero. */
+  function loadEras() {
+    if (!erasPromise) erasPromise = fetchJson(ERAS_FILE);
+    return erasPromise;
   }
 
   /** La riga della valutazione con il risultato migliore fra le codifiche. */
@@ -45,6 +55,7 @@
   Lotto.timesfm = {
     file: FILE,
     load: load,
+    loadEras: loadEras,
     bestRow: bestRow,
     baselineRow: baselineRow
   };

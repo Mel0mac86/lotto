@@ -52,6 +52,21 @@ Si rigenerano con `tools/timesfm_lotto.py` e `tools/timesfm_previsione.py` (vedi
 girare nel browser, quindi le previsioni sono calcolate una volta e distribuite come
 file. Restano ferme all'ultima estrazione vista, indicata nel file stesso.
 
+## `timesfm-epoche.json`
+
+Il confronto che risponde alla domanda «TimesFM riesce ad accorgersi di un pattern
+vero?»: la stessa procedura su estrazioni casuali, sull'epoca 1970-1999 (che il pattern
+ce l'ha) e sull'epoca 2000-2026 (che non ce l'ha). Prodotto dalle tre esecuzioni di
+`tools/timesfm_lotto.py` descritte nel [README di `tools/`](../../tools/README.md).
+
+## `pattern-lotto.json`
+
+Esito di `tools/cerca_pattern.py`: 48 test statistici su tutte le estrazioni, il loro
+p-value, quali sopravvivono alla correzione di Benjamini-Hochberg, e il quadro completo
+dell'effetto che regge (media dei numeri estratti per epoca, scostamento per posizione
+di estrazione, resa di una regola fissa, trasferimento fuori campione). Va calcolato
+fuori dal telefono perché guarda l'archivio intero.
+
 ## Nota
 
 Le estrazioni sono fatti pubblici, ripubblicati qui per uso statistico e personale.

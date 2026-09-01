@@ -24,6 +24,19 @@ Nessuna dipendenza esterna: solo la libreria standard di Python 3.
 
 ---
 
+## Caccia ai pattern
+
+```sh
+python3 tools/cerca_pattern.py          # docs/data/pattern-lotto.json
+```
+
+48 test decisi in anticipo su tutte le 77.000 estrazioni, con correzione di
+Benjamini-Hochberg per la molteplicità, più il quadro completo dell'unico effetto che
+regge alla verifica. Solo libreria standard, qualche secondo. L'app legge il JSON nella
+scheda **Trova pattern**.
+
+---
+
 ## TimesFM
 
 `timesfm_lotto.py` e `timesfm_previsione.py` mettono alla prova
@@ -43,14 +56,21 @@ cd timesfm && python3 -m venv .venv
 
 # numeri previsti per la prossima estrazione di ogni ruota (circa 2 minuti)
 .venv/bin/python ../lotto/tools/timesfm_previsione.py
+
+# il modello davanti al pattern vero del 1970-1999, con i suoi controlli
+.venv/bin/python ../lotto/tools/timesfm_lotto.py --steps 150 --wheel CA --until 20000101 --skip-control
+.venv/bin/python ../lotto/tools/timesfm_lotto.py --steps 150 --wheel CA --from 20000101 --skip-control
+.venv/bin/python ../lotto/tools/timesfm_lotto.py --steps 150 --solo-controllo-negativo
 ```
 
 Producono `docs/data/timesfm-lotto.json` (la misura) e
 `docs/data/timesfm-previsioni.json` (i numeri più la misura). L'app legge il
 secondo e mostra sempre le due cose insieme.
 
-`timesfm_lotto.py` include un **controllo positivo**: la stessa identica
-procedura su estrazioni sintetiche costruite per essere prevedibili. Senza,
-un risultato negativo sui dati veri non si distinguerebbe da una procedura
-rotta. Il pesi di TimesFM hanno una licenza propria, diversa dall'Apache 2.0 del
+`timesfm_lotto.py` include **due controlli**, e servono entrambi. Il **positivo**
+(estrazioni sintetiche costruite per essere prevedibili) distingue «il modello non trova
+nulla» da «la procedura è rotta». Il **negativo** (`--solo-controllo-negativo`,
+estrazioni perfettamente casuali) misura il vero livello di rumore delle metriche: senza,
+la correlazione col valore del numero sembra rivelare una scoperta dove non c'è, perché
+il suo z nominale è gonfiato dalla sovrapposizione fra finestre consecutive. Il pesi di TimesFM hanno una licenza propria, diversa dall'Apache 2.0 del
 codice: vedi il repository di Google.

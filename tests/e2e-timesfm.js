@@ -54,6 +54,13 @@ const { chromium } = require('playwright-core');
   report('controllo positivo', text.includes('lo stesso modello su dati prevedibili'));
   report('verdetto onesto', text.includes('Nessun vantaggio predittivo dimostrato'));
 
+  await page.waitForFunction(
+    () => document.body.innerText.includes('Il modello davanti a un pattern vero'),
+    null, { timeout: 20000 });
+  const withEras = await page.textContent('main');
+  report('esperimento sulle epoche', withEras.includes('1970-1999'));
+  report('controllo negativo presente', withEras.includes('nessun pattern'));
+
   await browser.close();
   console.log('');
   if (errors.length) {

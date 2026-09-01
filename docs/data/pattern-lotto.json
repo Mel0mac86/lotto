@@ -1,0 +1,581 @@
+{
+  "estrazioni": 77000,
+  "test": [
+    {
+      "famiglia": "uniformità",
+      "nome": "Tutti i numeri, tutte le ruote",
+      "n": 77000,
+      "chi2": 102.02,
+      "gdl": 89,
+      "p": 0.16313877736925564,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Bari",
+      "n": 7370,
+      "chi2": 108.36,
+      "gdl": 89,
+      "p": 0.07974757170085078,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Cagliari",
+      "n": 7270,
+      "chi2": 100.48,
+      "gdl": 89,
+      "p": 0.19073728576725135,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Firenze",
+      "n": 7363,
+      "chi2": 84.52,
+      "gdl": 89,
+      "p": 0.6146700346199752,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Genova",
+      "n": 7342,
+      "chi2": 68.83,
+      "gdl": 89,
+      "p": 0.9443711430243179,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Milano",
+      "n": 7367,
+      "chi2": 84.15,
+      "gdl": 89,
+      "p": 0.6254649648328512,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Napoli",
+      "n": 7365,
+      "chi2": 80.14,
+      "gdl": 89,
+      "p": 0.7378415138532197,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Palermo",
+      "n": 7343,
+      "chi2": 75.88,
+      "gdl": 89,
+      "p": 0.8378662447633188,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Roma",
+      "n": 7368,
+      "chi2": 72.74,
+      "gdl": 89,
+      "p": 0.8946102989684162,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Nazionale",
+      "n": 3479,
+      "chi2": 89.26,
+      "gdl": 89,
+      "p": 0.4723023218215495,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Torino",
+      "n": 7366,
+      "chi2": 100.41,
+      "gdl": 89,
+      "p": 0.19189750894698288,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "uniformità",
+      "nome": "Numeri, ruota Venezia",
+      "n": 7367,
+      "chi2": 104.83,
+      "gdl": 89,
+      "p": 0.12062417244317503,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "epoche",
+      "nome": "Numeri, 1939-1959",
+      "n": 10771,
+      "chi2": 72.65,
+      "gdl": 89,
+      "p": 0.8959661843700689,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "epoche",
+      "nome": "Numeri, 1960-1979",
+      "n": 10430,
+      "chi2": 78.09,
+      "gdl": 89,
+      "p": 0.7891067713282606,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "epoche",
+      "nome": "Numeri, 1980-1999",
+      "n": 11900,
+      "chi2": 136.93,
+      "gdl": 89,
+      "p": 0.000832595442041173,
+      "sopravviveBH": true
+    },
+    {
+      "famiglia": "epoche",
+      "nome": "Numeri, 2000-2009",
+      "n": 13594,
+      "chi2": 80.49,
+      "gdl": 89,
+      "p": 0.7287449355614932,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "epoche",
+      "nome": "Numeri, 2010-2026",
+      "n": 30305,
+      "chi2": 88.75,
+      "gdl": 89,
+      "p": 0.4876251506911412,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Bari",
+      "n": 36845,
+      "osservato": 2030,
+      "atteso": 2046.9,
+      "z": -0.385,
+      "p": 0.6999579189292335,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Cagliari",
+      "n": 36345,
+      "osservato": 2017,
+      "atteso": 2019.2,
+      "z": -0.05,
+      "p": 0.9604287548070698,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Firenze",
+      "n": 36810,
+      "osservato": 1970,
+      "atteso": 2045.0,
+      "z": -1.707,
+      "p": 0.0879003297770442,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Genova",
+      "n": 36705,
+      "osservato": 2049,
+      "atteso": 2039.2,
+      "z": 0.224,
+      "p": 0.8227018409920891,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Milano",
+      "n": 36830,
+      "osservato": 2069,
+      "atteso": 2046.1,
+      "z": 0.521,
+      "p": 0.6025888739875748,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Napoli",
+      "n": 36820,
+      "osservato": 2007,
+      "atteso": 2045.6,
+      "z": -0.877,
+      "p": 0.3803840548282337,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Palermo",
+      "n": 36710,
+      "osservato": 2002,
+      "atteso": 2039.4,
+      "z": -0.853,
+      "p": 0.39355668526672216,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Roma",
+      "n": 36835,
+      "osservato": 2075,
+      "atteso": 2046.4,
+      "z": 0.651,
+      "p": 0.5151708722445817,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Nazionale",
+      "n": 17390,
+      "osservato": 931,
+      "atteso": 966.1,
+      "z": -1.162,
+      "p": 0.2450869055693396,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Torino",
+      "n": 36825,
+      "osservato": 2002,
+      "atteso": 2045.8,
+      "z": -0.997,
+      "p": 0.31866867235478546,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "ripetizioni",
+      "nome": "Ripetuti dall'estrazione precedente, Venezia",
+      "n": 36830,
+      "osservato": 2096,
+      "atteso": 2046.1,
+      "z": 1.135,
+      "p": 0.25642442469715565,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "autocorrelazione",
+      "nome": "Uscite a distanza 1",
+      "n": 384945,
+      "osservato": 21248,
+      "atteso": 21385.8,
+      "z": -0.97,
+      "p": 0.3321230560972062,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "autocorrelazione",
+      "nome": "Uscite a distanza 2",
+      "n": 384890,
+      "osservato": 21349,
+      "atteso": 21382.8,
+      "z": -0.238,
+      "p": 0.8121215852209658,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "autocorrelazione",
+      "nome": "Uscite a distanza 3",
+      "n": 384835,
+      "osservato": 21353,
+      "atteso": 21379.7,
+      "z": -0.188,
+      "p": 0.8508340628992188,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "autocorrelazione",
+      "nome": "Uscite a distanza 4",
+      "n": 384780,
+      "osservato": 21326,
+      "atteso": 21376.7,
+      "z": -0.357,
+      "p": 0.7214018555169253,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "autocorrelazione",
+      "nome": "Uscite a distanza 5",
+      "n": 384725,
+      "osservato": 21097,
+      "atteso": 21373.6,
+      "z": -1.947,
+      "p": 0.05154736095391138,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "giorno",
+      "nome": "Numeri estratti di giorno 0",
+      "n": 979,
+      "chi2": 86.51,
+      "gdl": 89,
+      "p": 0.5548801207587137,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "giorno",
+      "nome": "Numeri estratti di giorno 1",
+      "n": 11808,
+      "chi2": 97.5,
+      "gdl": 89,
+      "p": 0.252298314342281,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "giorno",
+      "nome": "Numeri estratti di giorno 2",
+      "n": 4540,
+      "chi2": 75.16,
+      "gdl": 89,
+      "p": 0.8521610930337871,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "giorno",
+      "nome": "Numeri estratti di giorno 3",
+      "n": 11889,
+      "chi2": 87.68,
+      "gdl": 89,
+      "p": 0.5196958368934594,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "giorno",
+      "nome": "Numeri estratti di giorno 4",
+      "n": 2201,
+      "chi2": 86.61,
+      "gdl": 89,
+      "p": 0.5520818623051247,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "giorno",
+      "nome": "Numeri estratti di giorno 5",
+      "n": 45582,
+      "chi2": 101.85,
+      "gdl": 89,
+      "p": 0.16604208357632066,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "aggregati",
+      "nome": "Numeri pari per estrazione",
+      "n": 77000,
+      "chi2": 3.67,
+      "gdl": 5,
+      "p": 0.5971699196308877,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "aggregati",
+      "nome": "Numeri alti per estrazione",
+      "n": 77000,
+      "chi2": 19.7,
+      "gdl": 5,
+      "p": 0.001425220614200251,
+      "sopravviveBH": true
+    },
+    {
+      "famiglia": "media",
+      "nome": "Media dei numeri estratti, tutto lo storico",
+      "n": 77000,
+      "media": 45.6703,
+      "z": 4.163,
+      "p": 3.144202186345873e-05,
+      "sopravviveBH": true
+    },
+    {
+      "famiglia": "media",
+      "nome": "Media dei numeri estratti, 1939-1959",
+      "n": 10771,
+      "media": 45.5712,
+      "z": 0.651,
+      "p": 0.5151672348163676,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "media",
+      "nome": "Media dei numeri estratti, 1960-1979",
+      "n": 10430,
+      "media": 45.9053,
+      "z": 3.645,
+      "p": 0.0002672393207162103,
+      "sopravviveBH": true
+    },
+    {
+      "famiglia": "media",
+      "nome": "Media dei numeri estratti, 1980-1999",
+      "n": 11900,
+      "media": 46.211,
+      "z": 6.831,
+      "p": 8.452286925990659e-12,
+      "sopravviveBH": true
+    },
+    {
+      "famiglia": "media",
+      "nome": "Media dei numeri estratti, 2000-2009",
+      "n": 13594,
+      "media": 45.6664,
+      "z": 1.709,
+      "p": 0.08750754435701838,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "media",
+      "nome": "Media dei numeri estratti, 2010-2026",
+      "n": 30305,
+      "media": 45.4142,
+      "z": -1.316,
+      "p": 0.18825267581143534,
+      "sopravviveBH": false
+    },
+    {
+      "famiglia": "coppie",
+      "nome": "Ambo più anomalo su 4.005 (45-49)",
+      "n": 77000,
+      "osservato": 133,
+      "atteso": 192.3,
+      "z": -4.279,
+      "p": 0.07238279581105522,
+      "pNonCorretto": 1.9e-05,
+      "nota": "massimo su 4.005 confronti, p corretto secondo Šidák",
+      "sopravviveBH": false
+    }
+  ],
+  "sopravvivonoBH": 5,
+  "scoperta": {
+    "titolo": "Nel 1970-1999 i numeri alti uscivano più dei bassi",
+    "medie": [
+      {
+        "periodo": "1939-1969",
+        "estrazioni": 15981,
+        "media": 45.6137,
+        "z": 1.27,
+        "p": 0.2053753413028203
+      },
+      {
+        "periodo": "1970-1999",
+        "estrazioni": 17120,
+        "media": 46.1797,
+        "z": 7.83,
+        "p": 4.7745240998177386e-15
+      },
+      {
+        "periodo": "2000-2026",
+        "estrazioni": 43899,
+        "media": 45.4923,
+        "z": -0.14,
+        "p": 0.8867839087608418
+      }
+    ],
+    "regolaFissa": [
+      {
+        "periodo": "1939-1969",
+        "estrazioni": 15981,
+        "centriPerEstrazione": 0.2795,
+        "vantaggio": 0.6,
+        "z": 0.42
+      },
+      {
+        "periodo": "1970-1999",
+        "estrazioni": 17120,
+        "centriPerEstrazione": 0.2943,
+        "vantaggio": 6.0,
+        "z": 4.33
+      },
+      {
+        "periodo": "2000-2026",
+        "estrazioni": 43899,
+        "centriPerEstrazione": 0.2792,
+        "vantaggio": 0.5,
+        "z": 0.61
+      }
+    ],
+    "posizioni": [
+      {
+        "posizione": 1,
+        "distorta": 6.76,
+        "pulita": -0.1
+      },
+      {
+        "posizione": 2,
+        "distorta": 4.2,
+        "pulita": 0.84
+      },
+      {
+        "posizione": 3,
+        "distorta": 3.42,
+        "pulita": 0.46
+      },
+      {
+        "posizione": 4,
+        "distorta": 1.15,
+        "pulita": -1.75
+      },
+      {
+        "posizione": 5,
+        "distorta": 1.59,
+        "pulita": 0.23
+      }
+    ],
+    "trasferimento": [
+      {
+        "scelti": "1970-1985",
+        "giocati": "1985-2000",
+        "numeri": [
+          50,
+          55,
+          77,
+          81,
+          83
+        ],
+        "estrazioni": 9290,
+        "centriPerEstrazione": 0.2786,
+        "vantaggio": 0.3,
+        "z": 0.15
+      },
+      {
+        "scelti": "1970-1990",
+        "giocati": "1990-2000",
+        "numeri": [
+          81,
+          83,
+          84,
+          87,
+          89
+        ],
+        "estrazioni": 6680,
+        "centriPerEstrazione": 0.2906,
+        "vantaggio": 4.6,
+        "z": 2.09
+      },
+      {
+        "scelti": "1970-2000",
+        "giocati": "2000-2027",
+        "numeri": [
+          74,
+          81,
+          83,
+          87,
+          90
+        ],
+        "estrazioni": 43899,
+        "centriPerEstrazione": 0.2803,
+        "vantaggio": 0.9,
+        "z": 1.06
+      }
+    ],
+    "attesaCentri": 0.2778
+  }
+}

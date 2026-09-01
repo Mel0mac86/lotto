@@ -435,6 +435,13 @@
         if (!started) {
           container.appendChild(ui.empty('🔍', 'Nessuna ricerca eseguita',
             'Scegli gioco, ruota e periodo, poi avvia la ricerca.'));
+          // Un pattern vero, già trovato su tutto l'archivio: vale la pena
+          // mostrarlo prima ancora che l'utente avvii una ricerca sua.
+          const archive = el('div');
+          container.appendChild(archive);
+          Lotto.patternArchive.load().then((data) => {
+            if (data && data.scoperta) archivePatternCards(archive, data);
+          });
           container.appendChild(ui.disclaimer());
           return;
         }
@@ -589,6 +596,106 @@
     ]);
   }
 
+  /** Il pattern trovato passando al setaccio tutto l'archivio.
+
+      È vero, verificato e completamente inutile per vincere: raccontarlo
+      per intero — compresa l'ultima parte — è il punto. */
+  function archivePatternCards(host, data) {
+    const finding = data.scoperta;
+
+    const rows = el('div.rows');
+    finding.medie.forEach((row) => {
+      const anomalous = Math.abs(row.z) > 3;
+      rows.appendChild(el('div.row', {}, [
+        el('span.grow', {}, [
+          el('div', { text: row.periodo, style: { fontWeight: '500' } }),
+          el('div.note', { text: ui.integer(row.estrazioni) + ' estrazioni' })
+        ]),
+        el('span.num', { text: ui.decimal(row.media, 3),
+          style: { fontWeight: '600', color: anomalous ? 'var(--low)' : 'var(--text)' } }),
+        el('span.note', { text: 'z ' + (row.z > 0 ? '+' : '') + ui.decimal(row.z, 2),
+          style: { minWidth: '62px', textAlign: 'right' } })
+      ]));
+    });
+
+    host.appendChild(ui.card('Un pattern vero, nello storico', '🔎', [
+      el('p', { text: finding.titolo, style: { fontSize: '15px', fontWeight: '600' } }),
+      el('p.note', { text: 'Media dei numeri estratti. Se le estrazioni fossero perfettamente '
+        + 'uniformi varrebbe 45,500 in ogni epoca. Fra il 1970 e il 1999 non lo è: '
+        + 'sette deviazioni standard sopra, cioè una probabilità di circa 5 su un milione '
+        + 'di miliardi che sia un caso.' }),
+      rows,
+      el('p.note', { text: 'Prima del 1970 e dopo il 1999 il valore torna dov’è atteso. '
+        + 'L’effetto regge separando gli anni pari dai dispari, e va nella stessa direzione '
+        + 'su tutte e dieci le ruote dell’epoca.' })
+    ]));
+
+    // Dove agiva: sul primo estratto molto più che sull'ultimo.
+    const positions = el('div.rows');
+    finding.posizioni.forEach((row) => {
+      positions.appendChild(el('div.row', {}, [
+        el('span.grow.note', { text: row.posizione + '° numero estratto' }),
+        el('span', { text: (row.distorta > 0 ? '+' : '') + ui.decimal(row.distorta, 2),
+          style: { fontWeight: '600', minWidth: '58px', textAlign: 'right',
+            color: row.distorta > 3 ? 'var(--low)' : 'var(--text)' } }),
+        el('span.note', { text: (row.pulita > 0 ? '+' : '') + ui.decimal(row.pulita, 2),
+          style: { minWidth: '58px', textAlign: 'right' } })
+      ]));
+    });
+    host.appendChild(ui.card('Dove agiva', '🎯', [
+      el('p.note', { text: 'Scostamento in deviazioni standard, per posizione di estrazione. '
+        + 'A sinistra il periodo 1970-1999, a destra il 2000-2026.' }),
+      positions,
+      el('p.note', { text: 'La distorsione è forte sul primo numero estratto e si spegne '
+        + 'verso l’ultimo. È la firma di qualcosa di fisico nell’estrazione, non di un '
+        + 'errore nei dati: un errore non avrebbe motivo di seguire l’ordine di uscita.' })
+    ]));
+
+    // E adesso la parte che conta: non serve a niente.
+    const rule = el('div.rows');
+    finding.regolaFissa.forEach((row) => {
+      rule.appendChild(el('div.row', {}, [
+        el('span.grow.note', { text: row.periodo }),
+        el('span', { text: ui.decimal(row.centriPerEstrazione, 4),
+          style: { fontWeight: '600', minWidth: '66px', textAlign: 'right' } }),
+        el('span.note', { text: (row.vantaggio > 0 ? '+' : '') + ui.decimal(row.vantaggio, 1) + '%',
+          style: { minWidth: '58px', textAlign: 'right',
+            color: row.z > 3 ? 'var(--medium)' : 'var(--text-secondary)' } })
+      ]));
+    });
+
+    const transfer = el('div.rows');
+    finding.trasferimento.forEach((row) => {
+      transfer.appendChild(el('div.row', {}, [
+        el('span.grow', {}, [
+          el('div.note', { text: 'scelti sul ' + row.scelti + ', giocati sul ' + row.giocati }),
+          el('div', { text: row.numeri.map(ui.pad).join('  '),
+            style: { fontSize: '12px', fontVariantNumeric: 'tabular-nums' } })
+        ]),
+        el('span.note', { text: (row.vantaggio > 0 ? '+' : '') + ui.decimal(row.vantaggio, 1) + '%',
+          style: { minWidth: '58px', textAlign: 'right' } })
+      ]));
+    });
+
+    host.appendChild(ui.card('E adesso la parte scomoda', '⚖️', [
+      el('p.note', { text: 'Giocando sempre 86-87-88-89-90 — una regola fissa, decisa senza '
+        + 'guardare i dati — si sarebbero centrati questi numeri per estrazione, contro i '
+        + ui.decimal(finding.attesaCentri, 4) + ' attesi dal caso:' }),
+      rule,
+      el('p.note', { text: 'Sei per cento in più, nel periodo giusto. Ma scegliendo i numeri '
+        + 'su un periodo e giocandoli su quello successivo — l’unico modo onesto di usarli, '
+        + 'perché il futuro non si conosce — il vantaggio evapora:' }),
+      transfer,
+      el('p', { text: 'Il Lotto restituisce ai giocatori circa il 60-70% del giocato. '
+        + 'Per andare in pari servirebbe un vantaggio fra il 43% e il 67%. '
+        + 'Il pattern più forte in 87 anni di storia ne vale il 6%, in un’epoca finita '
+        + 'da un quarto di secolo.', style: { fontSize: '14px' } }),
+      el('p.note', { text: 'Su 48 test, cinque sopravvivono alla correzione per la '
+        + 'molteplicità, e descrivono tutti questo stesso effetto. Gli altri quarantatré '
+        + 'non trovano nulla.' })
+    ]));
+  }
+
   // -------------------------------------------------------- AI Analyst
 
   views.machineLearning = function () {
@@ -627,6 +734,11 @@
                   'Il file delle previsioni di TimesFM non è nel pacchetto di questa versione.'));
               } else {
                 timesfmCards(host, payload, filter);
+                const eras = el('div');
+                host.appendChild(eras);
+                Lotto.timesfm.loadEras().then((data) => {
+                  if (data) eraExperimentCard(eras, data);
+                });
               }
               host.appendChild(ui.disclaimer());
             });
@@ -731,6 +843,56 @@
           + 'Sulle estrazioni vere non c’è.' })
       ]));
     }
+  }
+
+  /** Il modello messo davanti a un pattern vero: quello del 1970-1999.
+
+      La colonna che conta è la prima, il rumore puro. Senza, il +6,33 della
+      colonna di mezzo sembrerebbe una scoperta. */
+  function eraExperimentCard(host, data) {
+    const encodings = ['binaria', 'ritardo', 'frequenza'];
+    const table = el('div');
+
+    table.appendChild(el('div.row', {}, [
+      el('span.grow.note', { text: 'codifica', style: { fontWeight: '600' } }),
+      ...data.condizioni.map((condition) => el('span.note', {
+        text: condition.patternVero ? 'pattern vero' : 'nessun pattern',
+        style: { minWidth: '72px', textAlign: 'right', fontWeight: '600',
+          color: condition.patternVero ? 'var(--accent)' : 'var(--text-secondary)' }
+      }))
+    ]));
+    table.appendChild(el('div.row', {}, [
+      el('span.grow.note', { text: '' }),
+      ...data.condizioni.map((condition) => el('span.note', {
+        text: condition.periodo === 'nessuno' ? 'casuali' : condition.periodo,
+        style: { minWidth: '72px', textAlign: 'right', fontSize: '11px' }
+      }))
+    ]));
+
+    encodings.forEach((key) => {
+      table.appendChild(el('div.row', {}, [
+        el('span.grow.note', { text: key }),
+        ...data.condizioni.map((condition) => {
+          const row = condition.codifiche[key];
+          return el('span', {
+            text: (row.correlazioneConIlValore > 0 ? '+' : '')
+              + ui.decimal(row.correlazioneConIlValore, 3),
+            style: { minWidth: '72px', textAlign: 'right', fontSize: '13px',
+              fontVariantNumeric: 'tabular-nums' }
+          });
+        })
+      ]));
+    });
+
+    host.appendChild(ui.card('Il modello davanti a un pattern vero', '🧭', [
+      el('p.note', { text: data.domanda }),
+      el('p.note', { text: 'Correlazione fra il punteggio che il modello assegna a un numero '
+        + 'e il valore del numero stesso. Nel 1970-1999 i numeri alti uscivano davvero di '
+        + 'più: se il modello se ne accorgesse, qui si vedrebbe.' }),
+      table,
+      el('p', { text: data.conclusione, style: { fontSize: '14px' } }),
+      el('p.note', { text: data.avvertenza })
+    ]));
   }
 
   function formatCompactDate(value) {
