@@ -68,6 +68,115 @@ def fetch(url, path, minimum):
     return None
 
 
+def parse_official_page(html, draws, problems):
+    """Estrae le estrazioni da una pagina mensile dell'archivio ufficiale."""
+    for block in OFFICIAL_ROW.findall(html):
+        label = OFFICIAL_LABEL.search(block)
+        if not label:
+            problems["etichetta illeggibile"] += 1
+            continue
+        day, month_name, year = label.group(2).split()
+        month = MESE_NUMERO.get(month_name.lower())
+        numbers = [int(value) for value in OFFICIAL_COMB.findall(block)]
+        if not numbers:
+            # L'archivio elenca anche i concorsi in calendario non ancora estratti.
+            problems["concorso non ancora estratto"] += 1
+            continue
+        if month is None or len(numbers) != 6 or len(set(numbers)) != 6 \
+           or not all(1 <= n <= 90 for n in numbers):
+            problems["estrazione non valida"] += 1
+            continue
+        jolly = OFFICIAL_JOLLY.search(block)
+        star = OFFICIAL_STAR.search(block)
+        stamp = "%04d%02d%02d" % (int(year), month, int(day))
+        draws[stamp] = (int(label.group(1)), numbers,
+                        int(jolly.group(1)) if jolly else None,
+                        int(star.group(1)) if star else None)
+
+
+def write_csv(rows):
+    with open(OUT, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write("data;concorso;numero1;numero2;numero3;numero4;numero5;numero6;jolly;superstar\n")
+        for stamp, (contest, numbers, jolly, star) in rows:
+            handle.write("%s;%d;%s;%s;%s\n" % (
+                stamp, contest, ";".join(str(n) for n in numbers),
+                "" if jolly is None else jolly, "" if star is None else star))
+
+
+def read_existing():
+    """Rilegge il CSV già presente, per aggiungerci solo le estrazioni nuove."""
+    draws = {}
+    if not os.path.exists(OUT):
+        return draws
+    with open(OUT, encoding="utf-8") as handle:
+        next(handle)
+        for line in handle:
+            parts = line.rstrip("\n").split(";")
+            if len(parts) < 9:
+                continue
+            draws[parts[0]] = (int(parts[1]), [int(v) for v in parts[2:8]],
+                               int(parts[8]) if parts[8] else None,
+                               int(parts[9]) if len(parts) > 9 and parts[9] else None)
+    return draws
+
+
+def read_recent_official(months=2):
+    """Solo gli ultimi mesi dell'archivio ufficiale: quanto basta per aggiornare.
+
+    Le pagine non si mettono in cache, altrimenti l'aggiornamento rileggerebbe la
+    copia vecchia proprio del mese che sta cambiando."""
+    draws, problems = {}, collections.Counter()
+    now = time.gmtime()
+    year, month = now.tm_year, now.tm_mon
+    for _ in range(months):
+        url = "https://www.superenalotto.it/archivio-estrazioni/%d/%s" % (year, MESI[month - 1])
+        request = urllib.request.Request(url, headers={"User-Agent": "lotto-ai-analyzer/1.0"})
+        html = None
+        for attempt in range(4):
+            try:
+                with urllib.request.urlopen(request, timeout=120) as response:
+                    payload = response.read()
+                if len(payload) >= 50000:
+                    html = payload.decode("utf-8", errors="replace")
+                    break
+            except (urllib.error.URLError, OSError):
+                pass
+            time.sleep(5 * (attempt + 1))
+        if html is None:
+            # Un mese senza estrazioni risponde 404: non è un errore da bloccare.
+            problems["mese non letto: %04d-%02d" % (year, month)] += 1
+        else:
+            parse_official_page(html, draws, problems)
+        month -= 1
+        if month == 0:
+            year, month = year - 1, 12
+    return draws, problems
+
+
+def update():
+    """Aggiunge al CSV le estrazioni comparse da ultimo, senza rifare tutto lo
+    storico né riverificare le fonti sul passato, che non cambia."""
+    existing = read_existing()
+    if not existing:
+        sys.exit("nessun CSV da aggiornare: esegui prima l'importazione completa")
+    before = len(existing)
+    latest_before = max(existing)
+
+    recent, problems = read_recent_official()
+    print("ultimi mesi:", len(recent), "estrazioni lette · problemi:",
+          dict(problems) or "nessuno")
+    if not recent:
+        print("niente da aggiornare: l'archivio ufficiale non ha risposto")
+        return 1
+
+    existing.update(recent)
+    rows = sorted(existing.items())
+    write_csv(rows)
+    print("estrazioni aggiunte:", len(existing) - before, "· totale:", len(rows),
+          "· ultima:", rows[-1][0], "(prima era %s)" % latest_before)
+    return 0
+
+
 def read_official(cache):
     draws, problems = {}, collections.Counter()
     directory = os.path.join(cache, "ufficiale")
@@ -88,28 +197,7 @@ def read_official(cache):
         if html is None:
             problems["pagina non scaricata"] += 1
             continue
-        for block in OFFICIAL_ROW.findall(html):
-            label = OFFICIAL_LABEL.search(block)
-            if not label:
-                problems["etichetta illeggibile"] += 1
-                continue
-            day, month_name, year = label.group(2).split()
-            month = MESE_NUMERO.get(month_name.lower())
-            numbers = [int(value) for value in OFFICIAL_COMB.findall(block)]
-            if not numbers:
-                # L'archivio elenca anche i concorsi in calendario non ancora estratti.
-                problems["concorso non ancora estratto"] += 1
-                continue
-            if month is None or len(numbers) != 6 or len(set(numbers)) != 6 \
-               or not all(1 <= n <= 90 for n in numbers):
-                problems["estrazione non valida"] += 1
-                continue
-            jolly = OFFICIAL_JOLLY.search(block)
-            star = OFFICIAL_STAR.search(block)
-            stamp = "%04d%02d%02d" % (int(year), month, int(day))
-            draws[stamp] = (int(label.group(1)), numbers,
-                            int(jolly.group(1)) if jolly else None,
-                            int(star.group(1)) if star else None)
+        parse_official_page(html, draws, problems)
     return draws, problems
 
 
@@ -179,6 +267,8 @@ def compare(official, secondary):
 
 
 def main():
+    if "--aggiorna" in sys.argv[1:]:
+        sys.exit(update())
     cache = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, ".cache", "superenalotto")
     os.makedirs(cache, exist_ok=True)
 
@@ -205,12 +295,7 @@ def main():
     merged.update(official)
 
     rows = sorted(merged.items())
-    with open(OUT, "w", encoding="utf-8", newline="\n") as handle:
-        handle.write("data;concorso;numero1;numero2;numero3;numero4;numero5;numero6;jolly;superstar\n")
-        for stamp, (contest, numbers, jolly, star) in rows:
-            handle.write("%s;%d;%s;%s;%s\n" % (
-                stamp, contest, ";".join(str(n) for n in numbers),
-                "" if jolly is None else jolly, "" if star is None else star))
+    write_csv(rows)
 
     print("totale:", len(rows), "· dalla fonte secondaria (1997-2008):", from_secondary)
     print("periodo:", rows[0][0], "->", rows[-1][0])

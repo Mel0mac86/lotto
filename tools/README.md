@@ -7,7 +7,15 @@ storico incluso nell'app: chi usa l'app non deve eseguirli.
 python3 tools/fetch_lotto.py            # docs/data/lotto-storico.csv
 python3 tools/fetch_superenalotto.py    # docs/data/superenalotto-storico.csv
 python3 tools/build_manifest.py         # docs/data/manifest.json
+
+python3 tools/fetch_superenalotto.py --aggiorna   # solo le estrazioni nuove
 ```
+
+`--aggiorna` legge il CSV già presente, scarica soltanto gli ultimi due mesi
+dall'archivio ufficiale e aggiunge quello che manca: è la modalità usata ogni sera dal
+workflow [`aggiorna-estrazioni.yml`](../.github/workflows/aggiorna-estrazioni.yml), che
+altrimenti dovrebbe rileggere 216 pagine ogni volta. Lo storico anteriore al 2009 non
+viene toccato, quindi non serve riverificare le fonti.
 
 Nessuna dipendenza esterna: solo la libreria standard di Python 3.
 

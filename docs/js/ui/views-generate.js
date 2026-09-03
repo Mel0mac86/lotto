@@ -158,6 +158,185 @@
     };
   };
 
+  // -------------------------------------------------------- Quaterne
+
+  views.quadruples = function (gameId) {
+    const filter = Lotto.app.defaultFilter(gameId);
+    filter.wheel = filter.wheel === 'all' && Lotto.GAMES[filter.game].usesWheels ? 'Bari' : filter.wheel;
+    let started = false;
+    let fullSearch = false;
+    const expanded = {};
+
+    return {
+      title: 'Quaterne',
+      render: function (container) {
+        if (views.requireData(container, filter.game)) return;
+
+        container.appendChild(ui.card(null, null, [
+          views.filterControls(filter, () => { started = false; Lotto.app.refresh(); },
+            { game: false, allWheels: false }),
+          ui.segmented([
+            { id: 'fast', name: 'Migliori 45 numeri' },
+            { id: 'full', name: 'Tutte le 2.555.190' }
+          ], fullSearch ? 'full' : 'fast', (value) => {
+            fullSearch = value === 'full'; started = false; Lotto.app.refresh();
+          }),
+          el('p.note', { text: fullSearch
+            ? 'Vengono valutate tutte le quaterne possibili fra 1 e 90: il calcolo richiede qualche secondo.'
+            : 'Vengono valutate le quaterne composte dai 45 numeri con indice statistico più alto.' }),
+          el('button.btn', { text: 'Genera quaterne',
+            onclick: () => { started = true; Lotto.app.refresh(); } })
+        ]));
+
+        if (!started) {
+          container.appendChild(ui.empty('🔷', 'Nessuna quaterna calcolata',
+            'Tocca «Genera quaterne» per esplorare le combinazioni di quattro numeri.'));
+          container.appendChild(ui.disclaimer());
+          return;
+        }
+
+        views.asyncPanel(container, 'Analisi delle combinazioni di quattro numeri…',
+          (onProgress) => Lotto.app.compute('quadruples',
+            { filter: filter, limit: 10, poolSize: fullSearch ? 90 : 45,
+              weights: Lotto.app.state.settings.weights }, onProgress),
+          (host, result) => {
+            host.appendChild(el('p.note', { text: 'TOP ' + result.quadruples.length + ' QUATERNE',
+              style: { fontWeight: '700', letterSpacing: '0.03em' } }));
+
+            result.quadruples.forEach((quad, index) => {
+              const key = quad.numbers.join('-');
+              const body = [
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } }, [
+                  el('span', { text: (index + 1) + '.',
+                    style: { fontWeight: '600', color: 'var(--text-secondary)', minWidth: '20px' } }),
+                  ui.combinationRow(quad.numbers, scoreMapFor(result.summary, quad.numbers)),
+                  el('span.grow'),
+                  ui.scoreBadge(quad.score)
+                ]),
+                ui.metrics([
+                  ui.metric('Quaterna uscita', String(quad.jointCount),
+                    'attese ' + ui.decimal(quad.expectedCount, 3)),
+                  ui.metric('Ritardo', String(quad.delay)),
+                  ui.metric('Somma', String(quad.sum)),
+                  ui.metric('Pari/disp.', quad.evenCount + '/' + (4 - quad.evenCount))
+                ]),
+                el('button.btn.ghost', {
+                  text: expanded[key] ? 'Nascondi' : 'Perché?',
+                  onclick: () => { expanded[key] = !expanded[key]; Lotto.app.refresh(); }
+                })
+              ];
+              if (expanded[key]) body.push(ui.reasonsList(quad.reasons));
+              host.appendChild(ui.card(null, null, body));
+            });
+            host.appendChild(el('p.note', { text: 'Una quaterna esce in media una volta ogni '
+              + '511.038 estrazioni: i conteggi storici sono quasi sempre zero, e l’indice '
+              + 'statistico riflette i singoli numeri e i loro ambi, non la quaterna intera.' }));
+            host.appendChild(ui.disclaimer());
+          });
+      }
+    };
+  };
+
+  // ------------------------------------------------ Terzine per ambetto
+
+  views.ambetti = function (gameId) {
+    const filter = Lotto.app.defaultFilter(gameId);
+    filter.wheel = filter.wheel === 'all' && Lotto.GAMES[filter.game].usesWheels ? 'Bari' : filter.wheel;
+    let started = false;
+    let fullSearch = false;
+    const expanded = {};
+
+    return {
+      title: 'Terzine per ambetto',
+      render: function (container) {
+        if (views.requireData(container, filter.game)) return;
+
+        container.appendChild(ui.card('Che cos’è l’ambetto', '🎯', [
+          el('p.note', { text: 'Una terzina giocata per ambo: si vince se escono almeno due '
+            + 'dei tre numeri. Tre numeri coprono tre ambi, quindi la probabilità sale da '
+            + '1 su 400 dell’ambo secco a 1 su 137 — al prezzo di dividere la posta su tre '
+            + 'combinazioni.' }),
+          el('p.note', { text: 'Per questo la terzina non è scelta come un terno, dove servono '
+            + 'tutti e tre i numeri: l’indice mostrato è la media dei tre ambi interni.' })
+        ]));
+
+        container.appendChild(ui.card(null, null, [
+          views.filterControls(filter, () => { started = false; Lotto.app.refresh(); },
+            { game: false, allWheels: false }),
+          ui.segmented([
+            { id: 'fast', name: 'Migliori 45 numeri' },
+            { id: 'full', name: 'Tutte le 117.480' }
+          ], fullSearch ? 'full' : 'fast', (value) => {
+            fullSearch = value === 'full'; started = false; Lotto.app.refresh();
+          }),
+          el('button.btn', { text: 'Genera terzine',
+            onclick: () => { started = true; Lotto.app.refresh(); } })
+        ]));
+
+        if (!started) {
+          container.appendChild(ui.empty('🎯', 'Nessuna terzina calcolata',
+            'Tocca «Genera terzine» per cercare le terzine con gli ambi interni più forti.'));
+          container.appendChild(ui.disclaimer());
+          return;
+        }
+
+        views.asyncPanel(container, 'Analisi delle terzine…',
+          (onProgress) => Lotto.app.compute('ambetti',
+            { filter: filter, limit: 10, poolSize: fullSearch ? 90 : 45,
+              weights: Lotto.app.state.settings.weights }, onProgress),
+          (host, result) => {
+            host.appendChild(el('p.note', { text: 'TOP ' + result.ambetti.length + ' TERZINE',
+              style: { fontWeight: '700', letterSpacing: '0.03em' } }));
+
+            result.ambetti.forEach((entry, index) => {
+              const key = entry.numbers.join('-');
+              const pairs = el('div.rows');
+              entry.pairs.forEach((pair) => {
+                pairs.appendChild(el('div.row', {}, [
+                  el('span.grow.note', { text: 'ambo ' + pair.numbers.map(ui.pad).join('-') }),
+                  el('span.note', { text: pair.count + ' uscite',
+                    style: { minWidth: '72px', textAlign: 'right' } }),
+                  el('span.note', { text: 'rit. ' + pair.delay,
+                    style: { minWidth: '62px', textAlign: 'right' } })
+                ]));
+              });
+
+              const body = [
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } }, [
+                  el('span', { text: (index + 1) + '.',
+                    style: { fontWeight: '600', color: 'var(--text-secondary)', minWidth: '20px' } }),
+                  ui.combinationRow(entry.numbers, scoreMapFor(result.summary, entry.numbers)),
+                  el('span.grow'),
+                  ui.scoreBadge(entry.score)
+                ]),
+                ui.metrics([
+                  ui.metric('Almeno due usciti', String(entry.ambettoCount),
+                    'attesi ' + ui.decimal(entry.expectedCount, 1)),
+                  ui.metric('Ritardo', String(entry.delay), 'estrazioni'),
+                  ui.metric('Tutti e tre', String(entry.tripleCount))
+                ]),
+                pairs,
+                el('button.btn.ghost', {
+                  text: expanded[key] ? 'Nascondi' : 'Perché?',
+                  onclick: () => { expanded[key] = !expanded[key]; Lotto.app.refresh(); }
+                })
+              ];
+              if (expanded[key]) body.push(ui.reasonsList(entry.reasons));
+              host.appendChild(ui.card(null, null, body));
+            });
+            // Queste terzine sono il massimo di una lista lunga: un po' sopra
+            // l'atteso ci finiscono anche estraendo a caso.
+            host.appendChild(el('p.note', { text: 'Sono le migliori fra '
+              + (fullSearch ? '117.480' : '14.190') + ' terzine esaminate: qualcuna molto '
+              + 'sopra le ' + ui.decimal(result.ambetti[0].expectedCount, 1) + ' uscite attese '
+              + 'si troverebbe anche in estrazioni perfettamente casuali. Il confronto onesto '
+              + 'è nella scheda Backtest, non in questi conteggi.' }));
+            host.appendChild(ui.disclaimer());
+          });
+      }
+    };
+  };
+
   // --------------------------------------------------------- Cinquine
 
   views.quintuples = function (gameId) {

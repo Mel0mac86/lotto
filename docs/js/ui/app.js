@@ -221,15 +221,44 @@
     appNode.appendChild(main);
   }
 
+  /**
+   * AGGIORNAMENTO AUTOMATICO. All'avvio confronta la data dell'ultima estrazione
+   * in archivio con quella pubblicata nel manifesto e, se ne sono uscite di
+   * nuove, le importa da sé.
+   *
+   * Non parte su un archivio vuoto: quello è un primo caricamento, e lo decide
+   * l'utente. Se la rete non c'è, si tace: l'app funziona lo stesso con quello
+   * che ha già sul dispositivo.
+   */
+  function checkForNewDraws() {
+    if (!state.settings.autoUpdate || !hasData()) return Promise.resolve(null);
+    return Lotto.archive.checkForUpdates(state.latest)
+      .then((outcome) => {
+        if (!outcome || !outcome.updated.length) return null;
+        return syncDraws().then(() => {
+          refresh();
+          const total = outcome.updated.reduce((sum, item) => sum + item.inserted, 0);
+          const games = outcome.updated.map((item) => Lotto.GAMES[item.game].name).join(' e ');
+          toast('Nuova estrazione analizzata. ' + total + ' estrazioni di '
+            + games + ' aggiunte all’archivio.');
+          return outcome;
+        });
+      })
+      .catch(() => null);
+  }
+
   function boot() {
     if (!state.settings.acceptedDisclaimer) {
       welcomeScreen();
       return;
     }
     render();
-    syncDraws().then(() => refresh()).catch((error) => {
-      toast('Archivio non disponibile: ' + error.message, true);
-    });
+    syncDraws()
+      .then(() => refresh())
+      .then(() => checkForNewDraws())
+      .catch((error) => {
+        toast('Archivio non disponibile: ' + error.message, true);
+      });
   }
 
   Lotto.app = {
@@ -246,6 +275,7 @@
     render: render,
     toast: toast,
     boot: boot,
+    checkForNewDraws: checkForNewDraws,
     TABS: TABS
   };
 

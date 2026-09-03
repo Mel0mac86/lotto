@@ -18,6 +18,7 @@ node tests/e2e-completo.js   # ambi, terni, multi-ruota, Monte Carlo, pattern, M
 node tests/e2e-storico.js    # caricamento dello storico ufficiale incluso, sui dati reali
 node tests/e2e-timesfm.js    # previsioni TimesFM sempre accanto alla loro misura
 node tests/e2e-pattern.js    # il pattern storico raccontato per intero, parte scomoda inclusa
+node tests/e2e-aggiornamento.js  # aggiornamento automatico, quaterne, terzine per ambetto
 ```
 
 Il percorso di Chromium è impostato nei file (`executablePath`): va adattato al proprio

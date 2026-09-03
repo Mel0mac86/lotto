@@ -21,8 +21,20 @@
   let manifestPromise = null;
 
   /** Il manifesto è piccolo: si legge all'avvio per descrivere l'archivio
-      senza scaricare i due megabyte del CSV. */
-  function loadManifest() {
+      senza scaricare i due megabyte del CSV.
+
+      `fresh` salta la cache: serve al controllo degli aggiornamenti, che deve
+      vedere il manifesto appena pubblicato e non la copia del service worker. */
+  function loadManifest(fresh) {
+    if (fresh) {
+      manifestPromise = fetch(MANIFEST_FILE, { cache: 'no-store' })
+        .then((response) => {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.json();
+        })
+        .catch(() => null);
+      return manifestPromise;
+    }
     if (!manifestPromise) {
       manifestPromise = fetch(MANIFEST_FILE, { cache: 'default' })
         .then((response) => {
@@ -32,6 +44,51 @@
         .catch(() => null);
     }
     return manifestPromise;
+  }
+
+  /** Data italiana gg/mm/aaaa del manifesto, come istante confrontabile. */
+  function timestampFromItalianDate(value) {
+    const parts = String(value || '').split('/');
+    if (parts.length !== 3) return null;
+    const stamp = Date.UTC(+parts[2], +parts[1] - 1, +parts[0], 12);
+    return isFinite(stamp) ? stamp : null;
+  }
+
+  /**
+   * Controlla se il pacchetto contiene estrazioni più recenti di quelle in
+   * archivio e, se sì, le importa.
+   *
+   * Il confronto è fra la data dell'ultima estrazione che l'app ha già e quella
+   * dichiarata dal manifesto: scarica il CSV solo quando c'è davvero qualcosa
+   * di nuovo. I duplicati vengono comunque ignorati in fase di inserimento,
+   * quindi un doppio controllo non fa danni.
+   */
+  function checkForUpdates(latestByGame, onProgress) {
+    return loadManifest(true).then((manifest) => {
+      if (!manifest || !manifest.archives) return null;
+
+      const stale = Object.keys(manifest.archives).filter((gameId) => {
+        const published = timestampFromItalianDate(manifest.archives[gameId].lastDate);
+        if (published === null) return false;
+        const owned = latestByGame[gameId];
+        // Nessuna estrazione in archivio: non è un aggiornamento, è un primo
+        // caricamento, e quello lo decide l'utente.
+        return owned ? published > owned : false;
+      });
+
+      if (!stale.length) return { updated: [], manifest: manifest };
+
+      return stale.reduce((chain, gameId) => chain.then((results) =>
+        loadArchive(gameId, onProgress).then((result) => {
+          results.push({ game: gameId, inserted: result.inserted,
+            lastDate: manifest.archives[gameId].lastDate });
+          return results;
+        })), Promise.resolve([]))
+        .then((results) => ({
+          updated: results.filter((item) => item.inserted > 0),
+          manifest: manifest
+        }));
+    });
   }
 
   function timestampFromCompactDate(value) {
@@ -120,6 +177,7 @@
     files: FILES,
     loadManifest: loadManifest,
     loadArchive: loadArchive,
+    checkForUpdates: checkForUpdates,
     parseArchive: parseArchive
   };
 })(typeof self !== 'undefined' ? self : this);

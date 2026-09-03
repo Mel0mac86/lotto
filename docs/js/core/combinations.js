@@ -9,7 +9,9 @@
     default: { numberScore: 0.55, coOccurrence: 0.25, balance: 0.20 },
     // Per gli ambi la co-occorrenza pesa di più: è il criterio caratterizzante.
     pair: { numberScore: 0.45, coOccurrence: 0.45, balance: 0.10 },
-    triple: { numberScore: 0.45, coOccurrence: 0.35, balance: 0.20 }
+    triple: { numberScore: 0.45, coOccurrence: 0.35, balance: 0.20 },
+    // Nella quaterna l'equilibrio interno torna a contare come nelle cinquine.
+    quad: { numberScore: 0.50, coOccurrence: 0.30, balance: 0.20 }
   };
 
   /** Media dei lift di tutte le coppie interne, mappata su 0–100. */

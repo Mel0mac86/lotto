@@ -177,6 +177,232 @@
   // ------------------------------------------------------------ Cinquine
 
   /** Vincoli statistici derivati dalle distribuzioni storiche osservate. */
+  // ------------------------------------------------------------- Quaterne
+
+  /** Quattro numeri giocati insieme.
+
+     La quaterna non ha un indice di co-uscita precalcolato come ambi e terni:
+     sarebbero 2.555.190 combinazioni da tenere in memoria. Si ordina quindi per
+     indice statistico e si contano le uscite reali soltanto per le migliori,
+     con una passata sulle estrazioni. */
+  function topQuadruples(context, limit, poolSize) {
+    if (context.isEmpty) return [];
+    const size = poolSize || 45;
+    let pool;
+    if (size >= 90) {
+      pool = [];
+      for (let n = 1; n <= 90; n += 1) pool.push(n);
+    } else {
+      pool = Lotto.topNumbers(context, Math.max(size, (limit || 10) + 6)).sort((a, b) => a - b);
+    }
+    if (pool.length < 4) return [];
+
+    const keep = limit || 10;
+    const best = [];
+    const numbers = [0, 0, 0, 0];
+
+    for (let i = 0; i < pool.length - 3; i += 1) {
+      numbers[0] = pool[i];
+      for (let j = i + 1; j < pool.length - 2; j += 1) {
+        numbers[1] = pool[j];
+        for (let k = j + 1; k < pool.length - 1; k += 1) {
+          numbers[2] = pool[k];
+          for (let m = k + 1; m < pool.length; m += 1) {
+            numbers[3] = pool[m];
+            const evaluation = Lotto.rawScore(numbers, context, 'quad');
+            if (best.length >= keep && evaluation.score <= best[best.length - 1].score) continue;
+            insertSorted(best, {
+              numbers: numbers.slice(),
+              score: evaluation.score,
+              components: evaluation.components
+            }, keep);
+          }
+        }
+      }
+    }
+
+    const expected = Lotto.expectedSetCount(context.drawCount, context.occurrences.drawnPerDraw, 4);
+    countExactSets(best, context);
+
+    best.forEach((quad) => {
+      const values = quad.numbers;
+      quad.expectedCount = expected;
+      quad.lift = expected > 0 ? quad.jointCount / expected : 0;
+      quad.sum = values[0] + values[1] + values[2] + values[3];
+      quad.evenCount = values.filter((n) => n % 2 === 0).length;
+      quad.lowCount = values.filter((n) => n <= 45).length;
+      quad.averagePairCount = averageInternalPairCount(values, context);
+      quad.reasons = setReasons(quad, context, 'quaterna');
+    });
+    return best;
+  }
+
+  /** Uscite reali e ritardo di ogni insieme, con una sola passata sulle estrazioni. */
+  function countExactSets(entries, context) {
+    entries.forEach((entry) => { entry.jointCount = 0; entry.lastIndex = -1; });
+    const draws = context.draws;
+    for (let d = 0; d < draws.length; d += 1) {
+      const drawn = draws[d].numbers;
+      for (let e = 0; e < entries.length; e += 1) {
+        const values = entries[e].numbers;
+        let matched = 0;
+        for (let v = 0; v < values.length; v += 1) {
+          if (drawn.indexOf(values[v]) >= 0) matched += 1;
+        }
+        if (matched === values.length) {
+          entries[e].jointCount += 1;
+          entries[e].lastIndex = d;
+        }
+      }
+    }
+    entries.forEach((entry) => {
+      entry.delay = entry.lastIndex < 0 ? draws.length : draws.length - 1 - entry.lastIndex;
+      delete entry.lastIndex;
+    });
+  }
+
+  function averageInternalPairCount(values, context) {
+    let total = 0;
+    let count = 0;
+    for (let i = 0; i < values.length - 1; i += 1) {
+      for (let j = i + 1; j < values.length; j += 1) {
+        total += Lotto.indexPairCount(context.occurrences, values[i], values[j]);
+        count += 1;
+      }
+    }
+    return count ? total / count : 0;
+  }
+
+  // ------------------------------------------- Terzine per ambetto
+
+  /* L'ambetto è una terzina giocata per ambo: si vince se ne escono ALMENO DUE.
+     Tre numeri coprono tre ambi, e la probabilità sale da 1 su 400 (ambo secco)
+     a 1 su 137. Il criterio di scelta non è quindi quello del terno — dove
+     servono tutti e tre — ma la forza dei tre ambi interni. */
+
+  /** Uscite storiche in cui almeno due dei tre numeri sono usciti insieme.
+
+     Inclusione-esclusione: le estrazioni con esattamente due compaiono in un
+     solo ambo, quelle con tutti e tre in tutti e tre, quindi vanno tolte due
+     volte. */
+  function ambettoCount(context, a, b, c) {
+    const index = context.occurrences;
+    return Lotto.indexPairCount(index, a, b)
+      + Lotto.indexPairCount(index, a, c)
+      + Lotto.indexPairCount(index, b, c)
+      - 2 * Lotto.indexTripleCount(index, a, b, c);
+  }
+
+  function expectedAmbettoCount(context) {
+    const index = context.occurrences;
+    return 3 * index.expectedPair - 2 * index.expectedTriple;
+  }
+
+  /** L'ultima uscita utile è la più recente fra quelle dei tre ambi. */
+  function ambettoDelay(context, a, b, c) {
+    const index = context.occurrences;
+    return Math.min(
+      Lotto.indexPairDelay(index, a, b),
+      Lotto.indexPairDelay(index, a, c),
+      Lotto.indexPairDelay(index, b, c));
+  }
+
+  function topAmbetti(context, limit, poolSize) {
+    if (context.isEmpty) return [];
+    const size = poolSize || 45;
+    let pool;
+    if (size >= 90) {
+      pool = [];
+      for (let n = 1; n <= 90; n += 1) pool.push(n);
+    } else {
+      pool = Lotto.topNumbers(context, Math.max(size, (limit || 10) + 5)).sort((a, b) => a - b);
+    }
+    if (pool.length < 3) return [];
+
+    // Gli indici dei tre ambi interni si calcolano una volta sola per coppia.
+    const pairScore = new Map();
+    for (let i = 0; i < pool.length - 1; i += 1) {
+      for (let j = i + 1; j < pool.length; j += 1) {
+        pairScore.set(Lotto.pairIndex(pool[i], pool[j]),
+          Lotto.rawScore([pool[i], pool[j]], context, 'pair').score);
+      }
+    }
+
+    const keep = limit || 10;
+    const best = [];
+
+    for (let i = 0; i < pool.length - 2; i += 1) {
+      for (let j = i + 1; j < pool.length - 1; j += 1) {
+        const scoreAB = pairScore.get(Lotto.pairIndex(pool[i], pool[j]));
+        for (let k = j + 1; k < pool.length; k += 1) {
+          // L'indice della terzina è la media dei suoi tre ambi: si vince
+          // tramite un ambo, quindi è quello il criterio giusto.
+          const score = (scoreAB
+            + pairScore.get(Lotto.pairIndex(pool[i], pool[k]))
+            + pairScore.get(Lotto.pairIndex(pool[j], pool[k]))) / 3;
+          if (best.length >= keep && score <= best[best.length - 1].score) continue;
+          insertSorted(best, { numbers: [pool[i], pool[j], pool[k]], score: score }, keep);
+        }
+      }
+    }
+
+    const expected = expectedAmbettoCount(context);
+    best.forEach((entry) => {
+      const [a, b, c] = entry.numbers;
+      entry.components = Lotto.rawScore(entry.numbers, context, 'triple').components;
+      entry.ambettoCount = ambettoCount(context, a, b, c);
+      entry.expectedCount = expected;
+      entry.lift = expected > 0 ? entry.ambettoCount / expected : 0;
+      entry.delay = ambettoDelay(context, a, b, c);
+      entry.tripleCount = Lotto.indexTripleCount(context.occurrences, a, b, c);
+      entry.pairs = [[a, b], [a, c], [b, c]].map((pair) => ({
+        numbers: pair,
+        count: Lotto.indexPairCount(context.occurrences, pair[0], pair[1]),
+        delay: Lotto.indexPairDelay(context.occurrences, pair[0], pair[1])
+      }));
+      entry.sum = a + b + c;
+      entry.evenCount = entry.numbers.filter((n) => n % 2 === 0).length;
+      entry.reasons = ambettoReasons(entry, context);
+    });
+    return best;
+  }
+
+  function ambettoReasons(entry, context) {
+    const reasons = [];
+    const label = entry.numbers.map(pad).join('-');
+    reasons.push('La terzina ' + label + ' copre tre ambi: ' + entry.pairs
+      .map((pair) => pair.numbers.map(pad).join('-')).join(', ')
+      + '. Si vince se ne escono almeno due dei tre numeri.');
+    reasons.push('Nel periodo selezionato almeno due di questi numeri sono usciti insieme '
+      + entry.ambettoCount + ' volte, contro le ' + fmt(entry.expectedCount, 1)
+      + ' attese in caso di pura casualità.');
+    const strongest = entry.pairs.slice().sort((x, y) => y.count - x.count)[0];
+    reasons.push('L’ambo interno più frequente è ' + strongest.numbers.map(pad).join('-')
+      + ' con ' + strongest.count + ' uscite congiunte, ritardo ' + strongest.delay + '.');
+    reasons.push('Ultima uscita utile della terzina: ' + entry.delay + ' estrazioni fa.');
+    if (entry.tripleCount > 0) {
+      reasons.push('Tutti e tre insieme sono usciti ' + entry.tripleCount + ' volte: '
+        + 'in quei casi l’ambetto paga tre ambi invece di uno.');
+    }
+    reasons.push(Lotto.DISCLAIMER.score);
+    return reasons;
+  }
+
+  function setReasons(entry, context, label) {
+    const reasons = [];
+    reasons.push('La ' + label + ' ' + entry.numbers.map(pad).join('-') + ' è uscita per intero '
+      + entry.jointCount + ' volte nel periodo, contro le '
+      + fmt(entry.expectedCount, 3) + ' attese dal caso.');
+    reasons.push('Ritardo dell’uscita completa: ' + entry.delay + ' estrazioni.');
+    reasons.push('Somma ' + entry.sum + ', ' + entry.evenCount + ' pari e '
+      + (entry.numbers.length - entry.evenCount) + ' dispari, ' + entry.lowCount
+      + ' numeri sotto il 46.');
+    reasons.push('Media delle uscite congiunte degli ambi interni: '
+      + fmt(entry.averagePairCount, 1) + '.');
+    reasons.push(Lotto.DISCLAIMER.score);
+    return reasons;
+  }
+
   function derivedConstraints(context, size) {
     const scale = size / Math.max(context.gameInfo.drawnCount, 1);
     const mean = context.sumMean * scale;
@@ -416,6 +642,10 @@
   }
 
   Object.assign(Lotto, {
+    topQuadruples: topQuadruples,
+    topAmbetti: topAmbetti,
+    ambettoCount: ambettoCount,
+    expectedAmbettoCount: expectedAmbettoCount,
     topPairs: topPairs,
     topTriples: topTriples,
     derivedConstraints: derivedConstraints,

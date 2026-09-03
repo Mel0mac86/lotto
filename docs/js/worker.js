@@ -61,6 +61,22 @@ const HANDLERS = {
     };
   },
 
+  quadruples: function (payload) {
+    const context = contextFor(payload);
+    return {
+      quadruples: Lotto.topQuadruples(context, payload.limit || 10, payload.poolSize || 45),
+      summary: serializeContext(context)
+    };
+  },
+
+  ambetti: function (payload) {
+    const context = contextFor(payload);
+    return {
+      ambetti: Lotto.topAmbetti(context, payload.limit || 10, payload.poolSize || 45),
+      summary: serializeContext(context)
+    };
+  },
+
   combinations: function (payload) {
     const context = contextFor(payload);
     const combinations = Lotto.generateCombinations({

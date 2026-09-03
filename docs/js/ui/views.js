@@ -125,8 +125,10 @@
           ['❄️', 'Numeri cold', 'Frequenza recente in calo', () => views.hotCold(game, 'cold')],
           ['⏳', 'Ritardatari', 'Estrazioni dall’ultima uscita', () => views.delays(game)],
           ['🔗', 'Ambi', 'Top coppie statisticamente interessanti', () => views.pairs(game)],
+          ['🎯', 'Ambetto', 'Terzine giocate per ambo', () => views.ambetti(game)],
           ['🔺', 'Terni', 'Top combinazioni di tre numeri', () => views.triples(game)],
-          ['🎯', game === 'lotto' ? 'Cinquina AI' : 'Sestina AI', 'Quattro modalità di generazione',
+          ['🔷', 'Quaterne', 'Top combinazioni di quattro numeri', () => views.quadruples(game)],
+          ['🎰', game === 'lotto' ? 'Cinquina AI' : 'Sestina AI', 'Quattro modalità di generazione',
             () => views.quintuples(game)]
         ];
         if (game === 'lotto') {
@@ -180,8 +182,10 @@
           ]],
           ['Combinazioni', [
             ['🔗', 'Ambi', () => views.pairs(game)],
+            ['🎯', 'Terzine per ambetto', () => views.ambetti(game)],
             ['🔺', 'Terni', () => views.triples(game)],
-            ['🎯', game === 'lotto' ? 'Cinquina AI' : 'Sestina AI', () => views.quintuples(game)]
+            ['🔷', 'Quaterne', () => views.quadruples(game)],
+            ['🎰', game === 'lotto' ? 'Cinquina AI' : 'Sestina AI', () => views.quintuples(game)]
           ].concat(game === 'lotto' ? [['🎡', 'Analisi multi-ruota', () => views.multiWheel()]] : [])]
         ];
 

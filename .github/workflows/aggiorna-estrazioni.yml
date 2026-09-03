@@ -1,0 +1,65 @@
+# Tiene aggiornato lo storico incluso nell'app.
+#
+# Gira ogni sera dopo le estrazioni, riscarica l'archivio ufficiale del Lotto,
+# aggiunge le nuove estrazioni del SuperEnalotto e riscrive il manifesto.
+# Se qualcosa è cambiato fa un commit; altrimenti non tocca niente.
+#
+# L'app, all'avvio, confronta la data del manifesto con quella dell'ultima
+# estrazione che ha in archivio e importa da sola quello che manca.
+#
+# ATTENZIONE: GitHub esegue i workflow pianificati SOLO dal branch predefinito
+# del repository. Finché queste modifiche vivono su un branch di lavoro, la
+# pianificazione non parte: si può avviare a mano da Actions → «Aggiorna le
+# estrazioni» → «Run workflow».
+name: Aggiorna le estrazioni
+
+on:
+  schedule:
+    # 20:30 UTC = 22:30 in Italia d'estate, 21:30 d'inverno: dopo ogni estrazione.
+    - cron: '30 20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aggiorna-estrazioni
+  cancel-in-progress: false
+
+jobs:
+  aggiorna:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Nessuna dipendenza: gli script usano solo la libreria standard.
+      - name: Archivio ufficiale del Lotto
+        run: python3 tools/fetch_lotto.py
+
+      - name: Nuove estrazioni del SuperEnalotto
+        # L'archivio ufficiale ogni tanto non risponde: un aggiornamento
+        # mancato non deve far fallire il resto del lavoro.
+        continue-on-error: true
+        run: python3 tools/fetch_superenalotto.py --aggiorna
+
+      - name: Manifesto
+        run: python3 tools/build_manifest.py
+
+      - name: Commit se ci sono estrazioni nuove
+        run: |
+          if git diff --quiet -- docs/data; then
+            echo "Nessuna estrazione nuova."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          ULTIMA=$(python3 -c "import json;print(json.load(open('docs/data/manifest.json'))['archives']['lotto']['lastDate'])")
+          git add docs/data
+          git commit -m "Estrazioni aggiornate al $ULTIMA"
+          git push origin HEAD:${{ github.ref_name }}

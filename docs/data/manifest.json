@@ -1,24 +1,24 @@
 {
-  "retrievedAt": "31/08/2026",
+  "retrievedAt": "03/09/2026",
   "note": "Copia locale degli archivi pubblici delle estrazioni. Nessun dato personale.",
   "archives": {
     "lotto": {
       "file": "data/lotto-storico.csv",
-      "draws": 77000,
+      "draws": 77011,
       "firstDate": "07/01/1939",
-      "lastDate": "29/08/2026",
-      "bytes": 2040789,
+      "lastDate": "01/09/2026",
+      "bytes": 2041081,
       "wheels": 11,
       "source": "Archivio storico ufficiale del Lotto (concessionario Brightstar Lottery, ex IGT Lottery S.p.A.)",
       "sourceUrl": "https://www.brightstarlottery.it/STORICO_ESTRAZIONI_LOTTO/storico.zip"
     },
     "superenalotto": {
       "file": "data/superenalotto-storico.csv",
-      "draws": 4258,
+      "draws": 4259,
       "firstDate": "03/12/1997",
-      "lastDate": "29/08/2026",
-      "bytes": 149108,
-      "contests": 4258,
+      "lastDate": "01/09/2026",
+      "bytes": 149145,
+      "contests": 4259,
       "source": "Archivio estrazioni ufficiale Sisal (superenalotto.it) dal 2009; per il periodo 1997-2008 archivio di estrazionilottooggi.it, verificato riga per riga contro quello ufficiale sugli anni in comune",
       "sourceUrl": "https://www.superenalotto.it/archivio-estrazioni"
     }

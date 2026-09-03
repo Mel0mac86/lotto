@@ -233,7 +233,8 @@
     defaultPeriod: 'fiveYears',
     theme: 'system',
     payouts: { lotto: Object.assign({}, Lotto.PAYOUTS ? Lotto.PAYOUTS.lotto : {}), superenalotto: {} },
-    acceptedDisclaimer: false
+    acceptedDisclaimer: false,
+    autoUpdate: true
   };
 
   function loadSettings() {

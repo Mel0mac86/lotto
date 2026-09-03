@@ -240,7 +240,54 @@
             + 'Reimportare lo stesso storico è sicuro, i duplicati vengono ignorati.'
           : 'Il caricamento avviene sul dispositivo: i dati non escono dal telefono.'
       }),
-      el('p.note', { text: 'Per le estrazioni successive a questa copia usa l’importazione da file o una sorgente remota.' })
+      autoUpdateRow(reload),
+      el('p.note', { text: 'Se un aggiornamento tardasse, l’importazione da file e la sorgente remota restano disponibili qui sotto.' })
+    ]);
+  }
+
+  /** L'interruttore dell'aggiornamento automatico, con il controllo a mano
+      accanto: chi non si fida dell'automatismo deve poterlo forzare. */
+  function autoUpdateRow(reload) {
+    const settings = Lotto.app.state.settings;
+    const status = el('p.note');
+
+    const toggle = el('input', { type: 'checkbox' });
+    toggle.checked = settings.autoUpdate !== false;
+    toggle.addEventListener('change', () => {
+      settings.autoUpdate = toggle.checked;
+      Lotto.app.saveSettings();
+    });
+
+    return el('div', { style: { marginTop: '8px' } }, [
+      el('label.row', { style: { cursor: 'pointer' } }, [
+        el('span.grow', {}, [
+          el('div', { text: 'Aggiornamento automatico', style: { fontWeight: '500' } }),
+          el('div.note', { text: 'All’avvio l’app controlla se sono uscite estrazioni nuove e le importa da sé.' })
+        ]),
+        toggle
+      ]),
+      el('button.btn.ghost', {
+        text: 'Controlla adesso',
+        onclick: () => {
+          status.textContent = 'Controllo in corso…';
+          Lotto.archive.checkForUpdates(Lotto.app.state.latest).then((outcome) => {
+            if (!outcome) {
+              status.textContent = 'Non è stato possibile controllare: riprova quando c’è rete.';
+              return null;
+            }
+            if (!outcome.updated.length) {
+              status.textContent = 'Archivio già aggiornato all’ultima estrazione pubblicata ('
+                + outcome.manifest.archives.lotto.lastDate + ').';
+              return null;
+            }
+            const total = outcome.updated.reduce((sum, item) => sum + item.inserted, 0);
+            status.textContent = 'Nuova estrazione analizzata: ' + ui.integer(total)
+              + ' estrazioni aggiunte.';
+            return reload();
+          });
+        }
+      }),
+      status
     ]);
   }
 

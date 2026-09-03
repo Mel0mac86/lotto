@@ -67,6 +67,16 @@
     return ((k * (k - 1) * (k - 2)) / (MAX_NUMBER * (MAX_NUMBER - 1) * (MAX_NUMBER - 2))) * drawCount;
   }
 
+  /** Uscite attese per un insieme di `size` numeri, in caso di pura casualità. */
+  function expectedSetCount(drawCount, drawnPerDraw, size) {
+    if (drawCount <= 0 || drawnPerDraw < size) return 0;
+    let probability = 1;
+    for (let i = 0; i < size; i += 1) {
+      probability *= (drawnPerDraw - i) / (MAX_NUMBER - i);
+    }
+    return probability * drawCount;
+  }
+
   function coOccurrenceCount(matrix, a, b) {
     if (a === b) return 0;
     return matrix.counts[pairIndex(a, b)];
@@ -189,6 +199,7 @@
     decodeTriple: decodeTriple,
     buildCoOccurrence: buildCoOccurrence,
     expectedPairCount: expectedPairCount,
+    expectedSetCount: expectedSetCount,
     expectedTripleCount: expectedTripleCount,
     coOccurrenceCount: coOccurrenceCount,
     coOccurrenceLift: coOccurrenceLift,

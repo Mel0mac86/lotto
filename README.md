@@ -90,6 +90,25 @@ documentata nel [README di quella cartella](docs/data/README.md), e si rigeneran
 gli script in [`tools/`](tools). Il caricamento avviene sul telefono: i dati non escono
 dal dispositivo.
 
+### Aggiornamento automatico
+
+Ogni sera dopo le estrazioni il workflow
+[`aggiorna-estrazioni.yml`](.github/workflows/aggiorna-estrazioni.yml) riscarica
+l'archivio ufficiale del Lotto, aggiunge le nuove estrazioni del SuperEnalotto, riscrive
+il manifesto e fa un commit soltanto se qualcosa è cambiato.
+
+All'avvio l'app confronta la data dell'ultima estrazione che ha in archivio con quella
+dichiarata dal manifesto e, se ne sono uscite di nuove, **le importa da sé** e avvisa:
+«Nuova estrazione analizzata.» Scarica il CSV solo quando c'è davvero qualcosa di nuovo;
+senza rete non fa nulla e l'app continua a funzionare con quello che ha già. In **Dati**
+c'è l'interruttore per disattivarlo e un pulsante «Controlla adesso».
+
+> GitHub esegue i workflow pianificati **solo dal branch predefinito**. Finché queste
+> modifiche vivono su un branch di lavoro, la pianificazione non parte: si avvia a mano
+> da Actions → «Aggiorna le estrazioni» → «Run workflow». Dopo il merge su `main` parte
+> da sola. GitHub sospende inoltre i workflow pianificati dopo 60 giorni senza commit
+> nel repository.
+
 In alternativa, sempre da **Dati**, puoi:
 
 1. **Importare un file** CSV, JSON o XLSX (vedi
@@ -102,6 +121,33 @@ In alternativa, sempre da **Dati**, puoi:
 
 L'app iOS nativa, che non ha i file inclusi, parte invece con l'archivio vuoto e usa i
 punti 1-3.
+
+---
+
+## Combinazioni generabili
+
+| | Numeri | Si vince se | Probabilità su una ruota |
+|---|---|---|---|
+| Ambo | 2 | escono entrambi | 1 su 400,5 |
+| **Terzina per ambetto** | **3** | **ne escono almeno due** | **1 su 136,6** |
+| Terno | 3 | escono tutti e tre | 1 su 11.748 |
+| **Quaterna** | **4** | **escono tutti e quattro** | **1 su 511.038** |
+| Cinquina AI | 5 | escono tutti e cinque | 1 su 43.949.268 |
+
+L'**ambetto** è una terzina giocata per ambo: tre numeri coprono tre ambi, quindi si
+vince se ne escono almeno due. Per questo la terzina non viene scelta come un terno —
+dove servono tutti e tre — ma in base alla forza dei suoi tre ambi interni: l'indice
+mostrato è la media dei tre. La schermata riporta quante volte, nel periodo, almeno due
+dei tre numeri sono usciti insieme, contro le uscite attese dal caso, il ritardo (la più
+recente fra le tre uscite d'ambo) e il dettaglio dei tre ambi.
+
+Il conteggio delle uscite congiunte usa l'inclusione-esclusione sugli ambi:
+`ambo(a,b) + ambo(a,c) + ambo(b,c) − 2·terno(a,b,c)`, perché un'estrazione con tutti e
+tre i numeri compare in tutti e tre gli ambi e va contata una volta sola.
+
+La **quaterna** non ha un indice di co-uscita precalcolato — sarebbero 2.555.190
+combinazioni da tenere in memoria — quindi viene ordinata per indice statistico e le
+uscite reali si contano soltanto per le prime dieci, con una passata sulle estrazioni.
 
 ---
 
